@@ -1,0 +1,2542 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>可不可熟成茶行 門市稽核系統</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2B2118;
+    --ink-soft:#6b5c4a;
+    --ink-faint:#9a8b78;
+    --bg:#FAF6EC;
+    --card:#FFFFFF;
+    --line:#E6DCC3;
+    --line-soft:#F0E9D6;
+    --green:#073C4E;
+    --green-deep:#052934;
+    --green-soft:#E3ECEE;
+    --amber:#B0813A;
+    --amber-soft:#F5EAD5;
+    --red:#A23B2E;
+    --red-soft:#F6E3DE;
+    --paper:#FDFBF5;
+    --shadow: 0 1px 2px rgba(43,33,24,0.06), 0 6px 20px -8px rgba(43,33,24,0.18);
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  ::selection{background:var(--green-soft);}
+  h1,h2,h3,.serif{font-family:'Noto Serif TC','Noto Sans TC',serif;}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:40;
+    background:linear-gradient(180deg, var(--green-deep), var(--green) 130%);
+    color:#fff;
+    padding:14px 16px 12px;
+    box-shadow:0 4px 16px -6px rgba(0,0,0,0.35);
+  }
+  .topbar-row{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .brand{display:flex; align-items:center; gap:10px; min-width:0;}
+  .brand-logo{
+    height:32px; width:auto; flex:none; border-radius:4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  }
+  .brand-text{min-width:0;}
+  .brand-text .t1{font-size:12px; opacity:.85; letter-spacing:.06em;}
+  .brand-text .t2{font-size:16px; font-weight:700; font-family:'Noto Serif TC',serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .tabs{
+    display:flex; gap:4px; background:rgba(255,255,255,0.14); padding:3px; border-radius:999px; flex:none;
+    max-width:62vw; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab-btn{
+    border:none; background:transparent; color:rgba(255,255,255,0.75);
+    font-size:12px; font-weight:600; padding:6px 10px; border-radius:999px; cursor:pointer;
+    font-family:inherit; transition:.15s; white-space:nowrap;
+  }
+  .tab-btn.active{background:#fff; color:var(--green-deep);}
+
+  .wrap{max-width:640px; margin:0 auto; padding:16px 14px 120px;}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:var(--shadow); margin-bottom:14px; overflow:hidden;
+  }
+  .card-pad{padding:16px;}
+  .field-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .field{display:flex; flex-direction:column; gap:5px;}
+  .field.full{grid-column:1/-1;}
+  .field label{font-size:12px; color:var(--ink-soft); font-weight:600;}
+  .field input[type=text], .field input[type=date], .field input[type=number], .field select, textarea{
+    font-family:inherit; font-size:14.5px; color:var(--ink);
+    border:1px solid var(--line); background:var(--paper); border-radius:9px;
+    padding:9px 10px; width:100%;
+  }
+  textarea{resize:vertical; min-height:64px;}
+  .field input:focus, .field select:focus, textarea:focus{outline:2px solid var(--green); outline-offset:1px; border-color:var(--green);}
+
+  .seg{display:flex; gap:8px; flex-wrap:wrap;}
+  .seg button{
+    border:1px solid var(--line); background:var(--paper); color:var(--ink-soft);
+    padding:8px 14px; border-radius:9px; font-size:13.5px; font-weight:600; cursor:pointer; font-family:inherit;
+  }
+  .seg button.on{background:var(--green); border-color:var(--green); color:#fff;}
+
+  /* ---------- gauge (tea cup) ---------- */
+  .gaugebar{
+    position:sticky; top:64px; z-index:30;
+    display:flex; align-items:center; gap:12px;
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    padding:10px 14px; margin-bottom:14px; box-shadow:var(--shadow);
+  }
+  .cupwrap{width:46px; height:58px; flex:none;}
+  .gauge-mid{flex:1; min-width:0;}
+  .gauge-score-row{display:flex; align-items:baseline; gap:6px;}
+  .gauge-score{font-family:'Noto Serif TC',serif; font-weight:900; font-size:26px; line-height:1;}
+  .gauge-max{font-size:12px; color:var(--ink-faint);}
+  .gauge-label{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+  .gauge-progress{font-size:11px; color:var(--ink-faint); text-align:right; flex:none;}
+  .badge{
+    display:inline-block; font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; margin-top:3px;
+  }
+  .badge.pass{background:var(--green-soft); color:var(--green-deep);}
+  .badge.warn{background:var(--amber-soft); color:#7a5a20;}
+  .badge.fail{background:var(--red-soft); color:var(--red);}
+
+  /* ---------- section accordion ---------- */
+  .section{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:14px; box-shadow:var(--shadow); overflow:hidden;}
+  .section-head{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:15px 16px; cursor:pointer; user-select:none;
+    background:linear-gradient(180deg,#fff,var(--paper));
+  }
+  .section-head .num{
+    width:28px; height:28px; border-radius:50%; background:var(--green); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:'Noto Serif TC',serif; font-weight:700; font-size:13px; flex:none;
+  }
+  .section-title{font-family:'Noto Serif TC',serif; font-weight:700; font-size:16px; flex:1;}
+  .section-sub{font-size:12px; color:var(--ink-faint);}
+  .chev{transition:transform .2s; color:var(--ink-faint); flex:none;}
+  .section.open .chev{transform:rotate(180deg);}
+  .section-body{display:none; border-top:1px solid var(--line-soft);}
+  .section.open .section-body{display:block;}
+
+  /* owner-type (直營/加盟) outer grouping */
+  .owner-head{background:linear-gradient(180deg,#fff,var(--amber-soft));}
+  .owner-num{background:var(--amber) !important;}
+  .owner-group > .section-body{padding:10px; background:var(--bg);}
+  .sub-section{margin-bottom:8px;}
+  .sub-section:last-child{margin-bottom:0;}
+  .sub-section .section-head{padding:12px 14px;}
+  .sub-section .num{width:24px; height:24px; font-size:11.5px;}
+  .sub-section .section-title{font-size:14px;}
+
+  .item{padding:14px 16px; border-bottom:1px solid var(--line-soft);}
+  .item:last-child{border-bottom:none;}
+  .item-top{display:flex; gap:10px; align-items:flex-start;}
+  .item-idx{font-family:'Noto Serif TC',serif; font-weight:700; color:var(--ink-faint); font-size:13px; width:20px; flex:none; padding-top:2px;}
+  .item-text{flex:1; font-size:14px; line-height:1.55;}
+  .item-pts{flex:none; font-size:11px; font-weight:700; color:var(--amber); background:var(--amber-soft); padding:2px 8px; border-radius:999px; margin-left:6px; white-space:nowrap;}
+  .item-actions{display:flex; gap:8px; margin-top:10px; margin-left:30px;}
+  .yn-btn{
+    flex:1; max-width:110px; border:1.5px solid var(--line); background:var(--paper); border-radius:9px;
+    padding:9px 0; font-family:inherit; font-weight:700; font-size:13.5px; cursor:pointer; color:var(--ink-soft);
+  }
+  .yn-btn.yes.on{background:var(--green-soft); border-color:var(--green); color:var(--green-deep);}
+  .yn-btn.no.on{background:var(--red-soft); border-color:var(--red); color:var(--red);}
+  .major-row{margin-left:30px; margin-top:8px; display:none;}
+  .major-row.show{display:flex; align-items:center; gap:7px;}
+  .major-row label{font-size:12.5px; color:var(--red); font-weight:600; display:flex; align-items:center; gap:6px; cursor:pointer;}
+  .item-note-row{margin-left:30px; margin-top:8px; display:none;}
+  .item-note-row.show{display:block;}
+  .item-note-row textarea{
+    width:100%; min-height:56px; border:1px solid var(--line); border-radius:8px; background:var(--paper);
+    padding:8px 10px; font-family:inherit; font-size:12.5px; color:var(--ink); resize:vertical;
+  }
+  .item-note-row textarea:focus{outline:1.5px solid var(--green); outline-offset:0;}
+  .item-tags{margin-left:30px; margin-top:9px; display:flex; flex-wrap:wrap; gap:6px;}
+  .tag-chip{
+    border:1px solid var(--line); background:var(--paper); border-radius:999px; padding:5px 11px; font-size:12px; cursor:pointer; color:var(--ink-soft);
+  }
+  .tag-chip.on{background:var(--green); border-color:var(--green); color:#fff;}
+
+  /* ---------- tea flavor tests ---------- */
+  .tea-card{border:1px solid var(--line); border-radius:12px; padding:13px; margin-bottom:10px; background:var(--paper);}
+  .tea-card-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:9px;}
+  .tea-card-head input{font-weight:700; font-size:14.5px; border:none; background:transparent; font-family:'Noto Serif TC',serif; padding:2px 0; width:70%;}
+  .tea-card-head input:focus{outline:none; border-bottom:1.5px solid var(--green);}
+  .tea-remove{border:none; background:none; color:var(--ink-faint); cursor:pointer; font-size:12px;}
+  .tea-row{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;}
+  .tea-row .field{margin-bottom:0;}
+  .mini-label{font-size:11.5px; color:var(--ink-faint); font-weight:600; margin-bottom:4px; display:block;}
+  .chip-row{display:flex; flex-wrap:wrap; gap:6px;}
+  .chip{border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 10px; font-size:12.5px; cursor:pointer; color:var(--ink-soft);}
+  .chip.on{background:var(--green); color:#fff; border-color:var(--green);}
+  .aroma-row{display:flex; gap:6px;}
+  .aroma-dot{width:30px; height:30px; border-radius:50%; border:1.5px solid var(--line); background:#fff; cursor:pointer; font-size:12px; font-weight:700; color:var(--ink-soft); display:flex; align-items:center; justify-content:center;}
+  .aroma-dot.on{background:var(--amber); border-color:var(--amber); color:#fff;}
+  .add-tea-btn{
+    width:100%; border:1.5px dashed var(--line); background:transparent; border-radius:10px; padding:10px; color:var(--ink-soft);
+    font-family:inherit; font-weight:600; font-size:13px; cursor:pointer;
+  }
+
+  /* ---------- schedule table ---------- */
+  .sched-table-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+  .sched-table{border-collapse:collapse; width:100%; min-width:540px; font-size:12.5px;}
+  .sched-table th{
+    background:var(--paper); color:var(--ink-soft); font-weight:700; text-align:left;
+    padding:8px 9px; border-bottom:1.5px solid var(--line); position:sticky; top:0; white-space:nowrap;
+  }
+  .sched-table td{padding:6px 9px; border-bottom:1px solid var(--line-soft); vertical-align:middle;}
+  .sched-table td:first-child{font-weight:600; white-space:nowrap; color:var(--ink);}
+  .sched-table tr:last-child td{border-bottom:none;}
+  .sched-table input{
+    width:100%; border:1px solid var(--line); border-radius:6px; padding:5px 7px; font-size:12px;
+    font-family:inherit; background:#fff; color:var(--ink);
+  }
+  .sched-table select{
+    width:100%; border:1px solid var(--line); border-radius:6px; padding:5px 6px; font-size:12px;
+    font-family:inherit; background:#fff; color:var(--ink); min-width:132px;
+  }
+  .sched-table input[type=datetime-local]{min-width:158px;}
+  .sched-table input[type=text]{min-width:88px;}
+  .sched-table input:focus, .sched-table select:focus{outline:1.5px solid var(--green); outline-offset:0;}
+
+  /* ---------- policy document (稽核管理辦法) ---------- */
+  .policy-meta{font-size:11.5px; color:var(--ink-faint); margin-bottom:14px;}
+  .policy-preface{font-size:12.5px; line-height:1.8; color:var(--ink-soft); background:var(--paper); border-radius:10px; padding:12px 14px; margin-bottom:2px;}
+  .policy-article{margin-bottom:16px;}
+  .policy-article:last-child{margin-bottom:2px;}
+  .policy-article h5{font-family:'Noto Serif TC',serif; font-size:13.5px; font-weight:700; margin:0 0 7px; color:var(--ink);}
+  .policy-article > p{font-size:12.5px; line-height:1.8; color:var(--ink-soft); margin:0 0 8px;}
+  .policy-article ol{margin:0; padding-left:19px;}
+  .policy-article ol li{font-size:12.5px; line-height:1.75; color:var(--ink-soft); margin-bottom:7px;}
+  .policy-article ol li:last-child{margin-bottom:0;}
+  .policy-article ol ol{margin-top:5px;}
+  .policy-tier{border:1px solid var(--line); border-radius:10px; padding:11px 13px; margin-bottom:9px; background:var(--paper);}
+  .policy-tier:last-child{margin-bottom:0;}
+  .policy-tier .tier-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px;}
+  .policy-tier .tier-title{font-weight:700; font-size:13px; color:var(--ink);}
+  .policy-tier .tier-score{font-family:'Noto Serif TC',serif; font-weight:800; font-size:13px;}
+  .policy-tier ul{margin:5px 0 0; padding-left:17px;}
+  .policy-tier ul li{font-size:12px; line-height:1.6; color:var(--ink-soft);}
+  .policy-table-wrap{overflow-x:auto; margin:6px 0 16px;}
+  .policy-table{width:100%; min-width:420px; border-collapse:collapse; font-size:12px;}
+  .policy-table th{background:var(--paper); padding:8px 10px; text-align:left; border-bottom:1.5px solid var(--line); font-weight:700; color:var(--ink-soft); white-space:nowrap;}
+  .policy-table td{padding:8px 10px; border-bottom:1px solid var(--line-soft); color:var(--ink); vertical-align:top;}
+  .policy-table td.pt-penalty{white-space:nowrap; font-weight:700; color:#A23B2E; text-align:right;}
+  .policy-table td.pt-bonus{white-space:nowrap; font-weight:700; color:#073C4E; text-align:right;}
+  .policy-cat-row td{background:var(--green-soft); font-weight:700; color:var(--green-deep); font-size:11.5px;}
+  .policy-note{font-size:11.5px; color:var(--ink-faint); line-height:1.7; margin-top:6px; padding-top:12px; border-top:1px solid var(--line-soft);}
+
+  /* ---------- flow process tree (稽核流程) ---------- */
+  .flow-tree{
+    --flow-line:#9C7A3F;
+    display:flex; flex-direction:column; align-items:center; padding:6px 2px 2px;
+    overflow-x:auto;
+  }
+  .flow-row{display:flex; align-items:center; gap:10px;}
+  .flow-node{
+    min-width:108px; max-width:220px; padding:11px 14px; border-radius:9px; color:#fff; font-weight:700;
+    font-size:12.5px; line-height:1.5; text-align:center; white-space:pre-line; outline:none; cursor:text;
+  }
+  .flow-node:focus{box-shadow:0 0 0 2.5px rgba(0,0,0,0.18);}
+  .flow-blue{background:#9BA9D8;}
+  .flow-orange{background:#D67A3D;}
+  .flow-tan{background:#C99A52;}
+  .flow-brown{background:#AD8347;}
+  .flow-red{background:#C16860;}
+  .flow-arrow-h{color:var(--flow-line); font-size:18px; font-weight:700;}
+  .flow-connector{width:2px; height:20px; background:var(--flow-line);}
+  .flow-connector.small{height:14px;}
+  .flow-branch{display:flex; align-items:flex-start; gap:36px; position:relative; margin-top:0;}
+  .flow-branch-left, .flow-branch-right{
+    display:flex; flex-direction:column; align-items:center; position:relative; padding-top:22px;
+  }
+  .flow-branch-left::before, .flow-branch-right::before{
+    content:''; position:absolute; top:0; height:2px; background:var(--flow-line);
+  }
+  .flow-branch-left::before{ left:50%; right:-18px; }
+  .flow-branch-right::before{ right:50%; left:-18px; }
+  .flow-branch-left::after, .flow-branch-right::after{
+    content:''; position:absolute; top:0; left:50%; width:2px; height:22px; background:var(--flow-line);
+  }
+  .flow-edge-label{
+    font-size:11.5px; font-weight:800; margin-bottom:6px; outline:none; cursor:text; white-space:nowrap;
+    padding:1px 6px; border-radius:5px;
+  }
+  .flow-edge-label:focus{box-shadow:0 0 0 2px rgba(0,0,0,0.15);}
+  .flow-pass{color:#3E7A52;}
+  .flow-fail{color:#8A3030;}
+
+  /* ---------- coverage table (稽核紀錄) ---------- */
+  .cov-summary{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:13px 14px; margin-bottom:12px; box-shadow:var(--shadow);}
+  .cov-summary-row{display:flex; justify-content:space-between; align-items:baseline; font-size:13px; margin-bottom:8px; color:var(--ink-soft);}
+  .cov-summary-row b{font-family:'Noto Serif TC',serif; font-size:16px; color:var(--ink);}
+  .cov-bar{height:8px; border-radius:999px; background:var(--line-soft); overflow:hidden;}
+  .cov-bar-fill{height:100%; background:var(--green); border-radius:999px; transition:width .3s;}
+  .stat-badge{display:inline-block; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:999px; white-space:nowrap;}
+  .stat-badge.done{background:var(--green-soft); color:var(--green-deep);}
+  .stat-badge.pending{background:#ECECEC; color:#8a8a8a;}
+  .stat-badge.major{background:var(--red-soft); color:var(--red); margin-left:5px;}
+  tr.row-pending{background:rgba(176,129,58,0.05);}
+  tr.row-pending td{color:var(--ink-faint);}
+  tr.cov-row-done{cursor:pointer;}
+  tr.cov-row-done:hover{background:var(--green-soft);}
+  .store-del-btn{
+    border:none; background:none; color:var(--ink-faint); cursor:pointer; font-size:11px; padding:2px 4px;
+    border-radius:4px; vertical-align:middle; line-height:1;
+  }
+  .store-del-btn:hover{color:var(--red); background:var(--red-soft);}
+
+  /* ---------- schedule calendar ---------- */
+  .cal-weekdays{display:grid; grid-template-columns:repeat(7,1fr); text-align:center; font-size:11px; color:var(--ink-faint); font-weight:700; margin-bottom:5px;}
+  .cal-days{display:grid; grid-template-columns:repeat(7,1fr); gap:3px;}
+  .cal-cell{
+    min-height:56px; border-radius:8px; background:var(--paper); border:1.5px solid transparent;
+    display:flex; flex-direction:column; align-items:center; padding:4px 2px 3px; cursor:pointer; position:relative; gap:1px;
+  }
+  .cal-cell.empty{background:transparent; cursor:default; min-height:0;}
+  .cal-cell.has-entries{background:var(--green-soft);}
+  .cal-cell.today{border-color:var(--amber);}
+  .cal-cell.selected{background:var(--green); border-color:var(--green);}
+  .cal-daynum{font-size:11.5px; font-weight:600; color:var(--ink); line-height:1.2;}
+  .cal-cell.selected .cal-daynum{color:#fff;}
+  .cal-names{width:100%; display:flex; flex-direction:column; align-items:center; gap:1px; margin-top:1px;}
+  .cal-name-line{
+    font-size:7.5px; line-height:1.2; font-weight:700; color:var(--green-deep);
+    max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .cal-cell.selected .cal-name-line{color:#fff;}
+  .cal-name-more{font-size:7px; color:var(--ink-faint); line-height:1.2;}
+  .cal-cell.selected .cal-name-more{color:#fff;}
+  .cal-agenda-title{font-size:12px; font-weight:700; color:var(--ink-soft); margin-bottom:6px;}
+  .cal-agenda-item{display:flex; gap:11px; padding:9px 2px; border-bottom:1px solid var(--line-soft);}
+  .cal-agenda-item:last-child{border-bottom:none;}
+  .cal-agenda-time{flex:none; width:76px; font-size:11.5px; font-weight:700; color:var(--green-deep); line-height:1.4;}
+  .cal-agenda-store{font-size:13.5px; font-weight:600; color:var(--ink);}
+  .cal-agenda-meta{font-size:11.5px; color:var(--ink-faint); margin-top:2px;}
+
+  /* ---------- analytics ---------- */
+  #an-year{width:auto; padding:7px 10px; font-size:13px;}
+  .stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;}
+  .stat-card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; box-shadow:var(--shadow);}
+  .stat-num{font-family:'Noto Serif TC',serif; font-weight:900; font-size:24px; color:var(--ink); line-height:1.1;}
+  .stat-lbl{font-size:11.5px; color:var(--ink-faint); margin-top:5px;}
+  .an-title{margin:0 0 12px; font-size:15px;}
+  .an-sub{font-size:11.5px; font-weight:700; color:var(--ink-faint); margin-bottom:8px; letter-spacing:.02em;}
+
+  .month-chart{display:flex; align-items:flex-end; gap:4px; height:120px;}
+  .month-col{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; min-width:0;}
+  .month-value{font-size:9px; color:var(--ink-soft); margin-bottom:3px; font-weight:700;}
+  .month-bar{width:100%; max-width:20px; border-radius:4px 4px 1px 1px; transition:height .3s; min-height:2px;}
+  .month-label{font-size:9px; color:var(--ink-faint); margin-top:5px;}
+
+  .hbar-row{margin-bottom:12px;}
+  .hbar-row:last-child{margin-bottom:0;}
+  .hbar-label-row{display:flex; justify-content:space-between; gap:8px; font-size:12.5px; margin-bottom:5px; color:var(--ink-soft);}
+  .hbar-label-row b{font-family:'Noto Serif TC',serif; color:var(--ink); flex:none; font-size:13px;}
+  .hbar-track{height:9px; border-radius:999px; background:var(--line-soft); overflow:hidden;}
+  .hbar-fill{height:100%; border-radius:999px; transition:width .3s;}
+
+  /* ---------- checklist ---------- */
+  .check-line{display:flex; align-items:center; gap:9px; padding:9px 0; border-bottom:1px solid var(--line-soft); font-size:14px;}
+  .check-line:last-child{border-bottom:none;}
+  .check-line input[type=checkbox]{width:18px; height:18px; accent-color:var(--green);}
+
+  /* ---------- notice ---------- */
+  .notice{background:var(--amber-soft); border:1px solid #e6cf9e; border-radius:12px; padding:13px 14px; font-size:12.5px; line-height:1.7; color:#6b5220; margin-bottom:14px;}
+  .notice b{color:#4a3a15;}
+
+  /* ---------- signature ---------- */
+  .sig-box{border:1px solid var(--line); border-radius:10px; background:var(--paper); position:relative; touch-action:none;}
+  canvas{display:block; width:100%; height:120px; border-radius:10px;}
+  .sig-clear{position:absolute; top:6px; right:8px; font-size:11px; border:none; background:rgba(255,255,255,0.85); border-radius:6px; padding:4px 8px; cursor:pointer; color:var(--ink-soft);}
+  .sig-hint{position:absolute; bottom:8px; left:10px; font-size:11.5px; color:var(--ink-faint); pointer-events:none;}
+
+  /* ---------- footer bar ---------- */
+  .footerbar{
+    position:fixed; bottom:0; left:0; right:0; z-index:50;
+    background:#fff; border-top:1px solid var(--line); padding:10px 14px; box-shadow:0 -6px 20px -8px rgba(43,33,24,0.2);
+  }
+  .footerbar-inner{max-width:640px; margin:0 auto; display:flex; gap:10px; align-items:center;}
+  .save-status{font-size:11.5px; color:var(--ink-faint); flex:1;}
+  .btn-primary{
+    background:var(--green); color:#fff; border:none; border-radius:10px; padding:12px 20px; font-family:inherit;
+    font-weight:700; font-size:14.5px; cursor:pointer; flex:none; box-shadow:0 4px 12px -4px rgba(63,107,79,0.55);
+  }
+  .btn-primary:active{transform:translateY(1px);}
+  .btn-ghost{background:transparent; border:1.5px solid var(--line); color:var(--ink-soft); border-radius:10px; padding:11px 16px; font-family:inherit; font-weight:600; font-size:13.5px; cursor:pointer;}
+
+  /* ---------- history ---------- */
+  .search-row{display:flex; gap:8px; margin-bottom:12px;}
+  .search-row input{flex:1;}
+  .rec-card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:13px 14px; margin-bottom:10px; box-shadow:var(--shadow); cursor:pointer;}
+  .rec-top{display:flex; justify-content:space-between; align-items:center; gap:8px;}
+  .rec-store{font-family:'Noto Serif TC',serif; font-weight:700; font-size:15.5px;}
+  .rec-meta{font-size:12px; color:var(--ink-faint); margin-top:3px;}
+  .rec-score{font-family:'Noto Serif TC',serif; font-weight:900; font-size:22px;}
+  .empty{text-align:center; color:var(--ink-faint); padding:50px 20px; font-size:13.5px;}
+  .empty .icon{font-size:34px; margin-bottom:8px;}
+
+  /* ---------- detail modal ---------- */
+  .modal-mask{position:fixed; inset:0; background:rgba(43,33,24,0.5); z-index:80; display:none;}
+  .modal-mask.show{display:block;}
+  .modal{
+    position:fixed; left:0; right:0; bottom:0; top:6%; z-index:81; background:var(--bg); border-radius:20px 20px 0 0;
+    max-width:640px; margin:0 auto; overflow-y:auto; box-shadow:0 -10px 40px rgba(0,0,0,0.3);
+  }
+  .modal-head{position:sticky; top:0; background:var(--green-deep); color:#fff; padding:16px; display:flex; justify-content:space-between; align-items:center;}
+  .modal-head h3{margin:0; font-size:16px;}
+  .modal-close{background:rgba(255,255,255,0.18); border:none; color:#fff; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:15px;}
+  .modal-body{padding:16px;}
+  .mini-sec{margin-bottom:16px;}
+  .mini-sec h4{font-family:'Noto Serif TC',serif; font-size:14px; margin:0 0 8px; color:var(--green-deep);}
+  .mini-item{display:flex; justify-content:space-between; gap:10px; padding:7px 0; border-bottom:1px solid var(--line-soft); font-size:13px;}
+  .mini-item .txt{flex:1; color:var(--ink-soft);}
+  .mini-tag{flex:none; font-weight:700; font-size:12px; padding:2px 9px; border-radius:999px;}
+  .mini-tag.yes{background:var(--green-soft); color:var(--green-deep);}
+  .mini-tag.no{background:var(--red-soft); color:var(--red);}
+  .mini-tag.blank{background:#eee; color:#999;}
+
+  @media(max-width:380px){
+    .field-grid{grid-template-columns:1fr;}
+    .tea-row{grid-template-columns:1fr;}
+    .brand-text .t1{display:none;}
+    .tab-btn{padding:6px 8px; font-size:11px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-row">
+    <div class="brand">
+      <img class="brand-logo" src="data:image/png;base64,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" alt="可不可熟成茶行">
+      <div class="brand-text">
+        <div class="t1">可不可熟成茶行</div>
+        <div class="t2">門市稽核系統</div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="form" onclick="switchTab('form')">稽核作業</button>
+      <button class="tab-btn" data-tab="history" onclick="switchTab('history')">稽核紀錄</button>
+      <button class="tab-btn" data-tab="schedule" onclick="switchTab('schedule')">稽核總表</button>
+      <button class="tab-btn" data-tab="analytics" onclick="switchTab('analytics')">稽核數據</button>
+    </div>
+  </div>
+</div>
+
+<div id="local-mode-banner" style="display:none; background:var(--amber-soft); color:#6b5220; font-size:12px; line-height:1.6; padding:9px 16px; text-align:center; border-bottom:1px solid #e6cf9e;">
+  ⚠️ 目前為「本機儲存模式」：資料僅保存在此瀏覽器裝置上，<b>不會</b>與其他人或其他裝置同步。若需要總部與門市共用同一份資料，請改在 Claude.ai 的 Artifact 內開啟使用。
+</div>
+
+<div class="wrap" id="view-form">
+
+  <div class="notice">
+    <b>注意事項</b><br>
+    一、稽查項目若有不符合事項，皆須一週內改善並回傳改善照片於YCC。<br>
+    二、稽核評分80分以上限期改善，不扣分（未在期限內改善扣分）。<br>
+    三、稽核評分80分以下限期改善，扣分（未在期限內改善再次扣分）。<br>
+    四、若違反重大缺失項目屬實，將立即停業並立即改善，改善完成後經總部同意可恢復營業，列入扣分。<br>
+    五、滿分100分，以扣分制計算。
+  </div>
+
+  <div class="card">
+    <div class="card-pad">
+      <div class="field-grid">
+        <div class="field full">
+          <label>門市名稱</label>
+          <select id="f-store" onchange="saveDraft()"></select>
+        </div>
+        <div class="field">
+          <label>稽核日期</label>
+          <input type="date" id="f-date" oninput="saveDraft()">
+        </div>
+        <div class="field full">
+          <label>稽核類型</label>
+          <div class="seg" id="f-audittype">
+            <button type="button" class="on" data-v="首次稽核" onclick="setAuditType(this)">首次稽核</button>
+            <button type="button" data-v="督導複核" onclick="setAuditType(this)">督導複核</button>
+            <button type="button" data-v="食安協同複核" onclick="setAuditType(this)">食安協同複核</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>稽核人員</label>
+          <input type="text" id="f-auditor" placeholder="姓名" oninput="saveDraft()">
+        </div>
+        <div class="field">
+          <label>值班主管</label>
+          <input type="text" id="f-supervisor" placeholder="姓名" oninput="saveDraft()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gaugebar">
+    <div class="cupwrap" id="cupwrap"></div>
+    <div class="gauge-mid">
+      <div class="gauge-score-row">
+        <span class="gauge-score" id="gauge-score">100</span>
+        <span class="gauge-max">/ 100</span>
+      </div>
+      <div class="gauge-label" id="gauge-badge-wrap"><span class="badge pass" id="gauge-badge">80分以上・免扣分</span></div>
+    </div>
+    <div class="gauge-progress" id="gauge-progress">已填 0 / 26 項</div>
+  </div>
+
+  <div id="sections"></div>
+
+  <div class="card">
+    <div class="card-pad">
+      <h3 class="serif" style="margin:0 0 10px;font-size:15px;">品管檢核</h3>
+      <div class="check-line"><input type="checkbox" id="chk-nozzle" onchange="saveDraft()"><label for="chk-nozzle">茶嘴定期清潔</label></div>
+      <div class="check-line"><input type="checkbox" id="chk-enzyme" onchange="saveDraft()"><label for="chk-enzyme">茶桶定期泡酵素</label></div>
+      <div class="check-line"><input type="checkbox" id="chk-log" onchange="saveDraft()"><label for="chk-log">工作日誌填寫完整</label></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-pad">
+      <h3 class="serif" style="margin:0 0 4px;font-size:15px;">茶品風味測試</h3>
+      <div style="font-size:12px;color:var(--ink-faint);margin-bottom:12px;">記錄試飲品項的糖冰、外觀、香氣與口感，供品保部門追蹤茶湯品質。</div>
+      <div id="tea-list"></div>
+      <button class="add-tea-btn" onclick="addTeaTest()">＋ 新增試飲品項</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-pad">
+      <div class="field full">
+        <label>門市反饋</label>
+        <textarea id="f-feedback" placeholder="門市對稽核內容或作業上的反饋…" oninput="saveDraft()"></textarea>
+      </div>
+      <div style="height:10px;"></div>
+      <div class="field full">
+        <label>備註</label>
+        <textarea id="f-notes" placeholder="其他補充說明…" oninput="saveDraft()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="signature-card">
+    <div class="card-pad">
+      <h3 class="serif" style="margin:0 0 10px;font-size:15px;">簽名確認</h3>
+      <div style="font-size:12px;color:var(--ink-faint);margin-bottom:10px;" id="signature-hint">本次稽核內容屬實無誤，已確認後簽名。</div>
+      <div class="field-grid">
+        <div class="field full">
+          <label>稽核人員簽名</label>
+          <div class="sig-box"><canvas id="sig-auditor"></canvas><button class="sig-clear" onclick="clearSig('auditor')">清除</button><span class="sig-hint" id="sig-hint-auditor">請於此處簽名</span></div>
+        </div>
+        <div class="field full">
+          <label>值班主管簽名</label>
+          <div class="sig-box"><canvas id="sig-supervisor"></canvas><button class="sig-clear" onclick="clearSig('supervisor')">清除</button><span class="sig-hint" id="sig-hint-supervisor">請於此處簽名</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="wrap" id="view-history" style="display:none;">
+  <div id="hist-coverage"></div>
+  <div class="search-row">
+    <input type="text" id="hist-search" placeholder="搜尋門市名稱…" oninput="renderHistory()">
+  </div>
+  <div id="hist-list"></div>
+</div>
+
+<div class="wrap" id="view-schedule" style="display:none;">
+  <div class="card">
+    <div class="card-pad">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+        <button type="button" class="btn-ghost" style="padding:6px 11px; font-size:14px;" onclick="shiftCalMonth(-1)">‹</button>
+        <h3 class="serif" id="cal-month-label" style="margin:0; font-size:15.5px;"></h3>
+        <button type="button" class="btn-ghost" style="padding:6px 11px; font-size:14px;" onclick="shiftCalMonth(1)">›</button>
+      </div>
+      <div id="cal-grid"></div>
+      <div id="cal-agenda" style="margin-top:14px;"></div>
+    </div>
+  </div>
+
+  <div style="display:flex; align-items:center; justify-content:space-between; margin:4px 2px 10px;">
+    <h3 class="serif" style="margin:0; font-size:16px;">稽核總表</h3>
+    <span id="sched-save-status" style="font-size:11px; color:var(--ink-faint);"></span>
+  </div>
+  <div style="font-size:12px; color:var(--ink-faint); margin:-6px 2px 10px;">共 <span id="sched-total"></span> 間門市，逐店填入稽核時間、稽核人員與交通安排</div>
+  <div class="search-row">
+    <input type="text" id="sched-search" placeholder="搜尋門市名稱…" oninput="renderScheduleTable()">
+  </div>
+  <div id="sched-regions"></div>
+
+  <div class="card">
+    <div class="card-pad">
+      <h3 class="serif" style="margin:0 0 3px; font-size:16px;">稽核管理辦法</h3>
+      <div class="policy-meta">可不可熟成茶行加盟業者門市管理辦法（含年度積分制度）・2025.12 版</div>
+
+      <div class="policy-preface">
+        為確保可不可熟成茶行（下稱本品牌）之營運秩序、消費者權益及品牌形象，並提升整體服務品質與經營效率，特訂定本管理辦法。本辦法適用於所有直營門市、加盟店業主及其聘僱人員，期能透過標準化管理，促進加盟體系之永續發展。
+      </div>
+
+      <div class="section" id="policy-ch1" style="margin-top:14px;">
+        <div class="section-head" onclick="toggleAcc('policy-ch1')">
+          <div class="num">一</div>
+          <div style="flex:1;min-width:0;"><div class="section-title" style="font-size:14.5px;">第一章・總則</div><div class="section-sub">法源依據、規章修改權、費用調整機制</div></div>
+          <div class="chev">▾</div>
+        </div>
+        <div class="section-body"><div class="card-pad">
+          <div class="policy-article">
+            <h5>第一條：法源依據與效力</h5>
+            <ol>
+              <li>本管理辦法（下稱本辦法）為加盟契約之補充說明，與加盟契約具同等約束力。加盟業主應確保其聘僱人員詳閱並嚴格遵守本辦法。</li>
+              <li>本辦法所列違規事項，作為營運管理及年度積分處理之依據，惟是否構成重大違約，仍依加盟契約之約定認定。本辦法與加盟契約條款有所衝突時，應優先適用加盟契約之規定。</li>
+            </ol>
+          </div>
+          <div class="policy-article">
+            <h5>第二條：規章修改與解釋權</h5>
+            <ol>
+              <li>為因應營運環境、成本變動或政策調整，總部保留隨時修正、補充或解釋本辦法之權利。</li>
+              <li>前項修正總部得透過書面、電子郵件、通訊軟體或總部公告之方式通知加盟業主，加盟業主同意自通知送達日起受修正後之規範約束。</li>
+            </ol>
+          </div>
+          <div class="policy-article">
+            <h5>第三條：費用調整機制</h5>
+            <p>本辦法及加盟契約中所涉各項費用（含物料、行銷、規費、駐店輔導費等），其金額由總部依營運現況彈性調整，並以書面、電子郵件、通訊軟體通知加盟業主，不另行公告。相關費用之收費標準，一律以「總部最新之通知或報價單」為唯一標準。加盟主應依通知之金額及期限繳納。</p>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="section" id="policy-ch2">
+        <div class="section-head" onclick="toggleAcc('policy-ch2')">
+          <div class="num">二</div>
+          <div style="flex:1;min-width:0;"><div class="section-title" style="font-size:14.5px;">第二章・營業管理</div><div class="section-sub">營業時間、門市／商品／人員／設備／物料／安全管理、教育訓練、稽核、帳務、POS、票券</div></div>
+          <div class="chev">▾</div>
+        </div>
+        <div class="section-body"><div class="card-pad">
+          <div class="policy-article">
+            <h5>第一條・營業時間</h5>
+            <ol>
+              <li>門市應遵守與總部協議之營業時間，每日營業時間不得低於 10 小時，且營業時間須固定，不得擅自縮短、延長或變更。營業時間內，業主應派駐足夠之合格人員，嚴禁發生空舖、中斷營業或拒絕接單之情事。</li>
+              <li>因天災、停電、重大設備故障等不可抗力因素致無法營業時，應立即以適當方式通知總部，並盡速採取補救措施。</li>
+              <li>加盟主因短期因素申請店休或營業時間調整者，應至少於 7 日前向總部提出申請，並依總部指示填寫指定表單，經總部審核同意後始得執行。</li>
+              <li>加盟主申請長期店休（超過 14 日）、固定店休或營業時間變更者，應於 30 個工作天提前提出申請，經總部評估核准後，始得依核准內容辦理。</li>
+              <li>違反前兩項規定，擅自停業達 2 次以上者，視為重大違約。</li>
+              <li>經核准店休或變更營業時間者，加盟主應履行下列義務，未履行者視同違規：
+                <ol>
+                  <li>依總部提供之內容，短期店休者應於店休當日張貼於門市顯眼處；長期店休、固定店休或永久營業時間變更者於 3 日前張貼公告於門市櫃台顯眼處。</li>
+                  <li>依總部指示完成 Google 商家資訊調整、外送平台關閉及 POS 系統設定。</li>
+                </ol>
+              </li>
+              <li>加盟主未經核准擅自店休、逾時開門、提早關門，或未依核准內容營業、公告不實者，甲方得依《年度積分制度》扣分；如有擅自停業連續達 3 日（含）以上之情形，得列為重大違約之認定事實之一，並依加盟契約相關約定辦理。</li>
+            </ol>
+          </div>
+          <div class="policy-article">
+            <h5>第二條・門市管理</h5>
+            <ol>
+              <li>業主及人員應自行負責營業範圍內之環境清潔（含外觀之清潔維護），於每日營業前完成所有區域之環境清潔，包括但不限於地板、天花板、招牌、燈具、各項營業用道具設備、門扇、櫥窗玻璃、門窗框及內氣味等，並保持門面櫥窗之清潔。</li>
+              <li>門市應隨時保持環境清潔，並符合相關衛生法規。</li>
+              <li>門市於每日營業結束後，應清理地面、水溝、檯面及相關設備，以維護門市之環境衛生與管路設備通暢。</li>
+              <li>門市應定期進行環境消毒。每次消毒前，人員應將商品、器皿或餐具確實加以覆蓋或妥善收藏，消毒隔日後，須進行必要之清洗。</li>
+              <li>鍋具、茶桶、豆花桶及所有器皿，應依規定進行必要之清潔與消毒，並定期更換破損器具，以免異物掉入茶湯或影響商品品質。</li>
+              <li>門市應供應商品至營業結束，不得拒絕與顧客交易。</li>
+              <li>如有客訴，業主有義務積極了解情況並妥善處理，以維護顧客權益及品牌信譽。若因處理不當產生負面評論、消費糾紛等，業主須承擔後續責任及費用，包括但不限於訴訟費、律師費、停業營業損失。</li>
+              <li>如涉及食品安全相關爭議或違法行為，總部得要求業主停業配合調查、進行清消、除蟲等預防性作業，業主有義務配合並支付產生之費用。</li>
+              <li>未經取得總部同意前，不得擅自於營業場所內從事攝影拍照或錄影行為。如有任何違規事項，總部有權制止活動進行，並要求刪除必要檔案與資料。</li>
+            </ol>
+          </div>
+          <div class="policy-article">
+            <h5>第三條・商品管理</h5>
+            <ol>
+              <li>門市現場僅能製作、販售可不可熟成茶行推出之商品，商品內容包括但不限於飲品、週邊商品等其他本品牌推出之商品。業主不得於店內存放、混合或使用非總部供應之同品項物料（如：私購他牌茶葉混合使用）。總部稽查時若發現營業現場存放未核准之同類物料，不論是否已開封使用，即視為重大違規。業主應確保門市人員不得將總部提供之原物料（如茶葉、配方粉、糖漿等）轉售、私下贈與或用於非品牌飲品之製作。</li>
+              <li>業主除應確保門市人員不得將總部提供之原物料轉售、私下贈與或用於非品牌飲品之製作。並應確保人員依照法規及總部規範，標示食材成分、來源與保存期限並確實維護管理。</li>
+              <li>門市應確保現場產品符合總部標準作業流程及比例，不得擅自更改、調整。</li>
+              <li>門市應確保現場產品符合食品安全法規，提供新鮮、衛生之飲品。</li>
+              <li>門市應依總部訂定之價格、品項內容及公告說明銷售商品，不得擅自停賣、調整價格、提供未經批准之折扣活動或違反公告方式販售。</li>
+              <li>業主不得於未經同意之平台或場所銷售商品，也不得有削價銷售、強拉顧客等商業惡性競爭之情事。</li>
+              <li>門市參與外送平台（如 UberEats、Foodpanda）之營業內容、品項與價格，應一律遵循總部之統一規範，不得私自上架非核准商品或更改價格。</li>
+            </ol>
+          </div>
+          <div class="policy-article">
+            <h5>第四條・人員管理</h5>
+            <ol>
+              <li>門市應建立並維護人員聘僱名冊，包括姓名、職務、聯絡方式及到職日期。名冊如有異動應於每月月底前完成調整，並將紙本擺放於門市現場，以供備查。若總部需調閱，應配合提供。</li>
+              <li>門市應提供固定緊急聯絡人、聯絡電話及電子郵件，並確保總部能隨時聯繫，若上述資料有異動，應立即通知總部更新。</li>
+              <li>業主應於人員報到時主動回收有效且符合法規之健康檢查報告，並彙整成冊、妥善留存備查。人員未取得有效健康檢查合格報告前，不得進入工作區域執行業務。若因違規上崗導致行政裁罰，由業主全額負擔。</li>
+              <li>業主應確保所有聘僱人員每年應接受至少三小時之食品安全與衛生相關教育訓練，並完整記錄、妥善留存備查。</li>
+              <li>業主有義務安排適任人員於門市執行相關業務，若人員違反本辦法之行為達二次且屢勸不聽、患有法定傳染病、品行不佳等不適任之情形，總部得要求撤換之。</li>
+              <li>業主聘僱及管理人員請務必符合相關法規，包括但不限於勞動基準法、職業衛生安全法。若有相關爭議應積極處理，如因而致人員或品牌相關受損，業主應負連帶賠償責任。業主應依規定為從業人員投保勞工保險、履約保險或公共意外責任險，並將保單影本送總部備查。</li>
+              <li>營業時間內，人員應穿著品牌制服、深色長褲，佩戴名牌、口罩、帽子，且有義務保持乾淨清潔並符合政府法令之相關規定，以維護品牌專業形象。</li>
+              <li>人員應主動招呼顧客、保持良好服務態度。</li>
+              <li>服務態度及商品知識應符合品牌規範，切忌有服務態度不佳、欺瞞顧客或其他影響顧客權益之行為，以致產生客訴或影響品牌商譽。</li>
+              <li>人員不得於營業範圍等公共區域聚眾閒聊、飲食、高聲喧嘩、睡覺、使用手機或製造噪音、吸菸之影響營運行為。</li>
+              <li>人員不得於任何時間於營業場所內酗用酒精飲品、打架、賭博或任何不法之行為。</li>
+              <li>人員離開工作崗位、休息外出或下班等非執行業務之行為時，應立即更換便服或穿著外套，不得穿著制服於公共場所活動。</li>
+              <li>人員如有吸菸之需求，應穿著便服並不得於營業場所、騎樓或其餘非法空間執行。</li>
+              <li>人員不得利用職務之便，利用門市資源（包括但不限於設備、原料、外送系統）進行私下接單或經營非品牌之業務或以不正當方法取得、使用或洩漏業務相關資料，例如：盜錄消費者之會員資料、將會員資料透露予他人或未經同意轉讓會員權益如消費點數、禮券等。</li>
+            </ol>
+          </div>
+          <div class="policy-article">
+            <h5>第五條・設備管理</h5>
+            <ol>
+              <li>為確保商品品質、統一品牌形象及方便維護管理，部分指定設備（如附件）應配合總部之規劃與指定廠商購買，並定期進行設備之自主檢查、實施保養維護，確保營業場所設備之功能正常。</li>
+              <li>營業場所之所有設備應確保符合相關法規與安全標準。因設備不符法規、使用不當或管理疏失所致之一切損害、事故或損失，皆由門市業主自行負責並承擔全部賠償責任。</li>
+              <li>嚴禁於店內私自增設未經總部核准之電器或生產設備（如：私人微波爐、未核准之封口機等）。若因私設設備導致電力超載、火災或品質異變，業主負完全之法律與賠償責任。</li>
+              <li>違反前項規定之業主所使用店面為總部承租者，除應負擔一切法律責任及賠償責任外，並依情節輕重給付 5 倍之懲罰性違約金。</li>
+              <li>業主應定期檢修軟硬體設備。甲方督導發現設備有毀損之虞（如招牌燈管不亮、裝潢剝落）得要求限期改善，費用由業主負擔。逾期未改善累計達 2 次者，得列為重大違約之認定事實之一，並依加盟契約相關約定辦理。</li>
+              <li>除契約另有約定外，門市外牆、騎樓或人行道不得擅自張貼非總部授權之廣告物或設置攤販、雜物。</li>
+              <li>門市應嚴格執行原物料「先入先出（FIFO）」原則。總部稽查時若發現過期原物料存於營業現場（不論是否拆封），即視為嚴重違規。</li>
+            </ol>
+          </div>
+          <div class="policy-article">
+            <h5>第六條・物料管理</h5>
+            <ol>
+              <li>為確保商品品質、統一品牌形象及保障消費者權益，營業所需之商品及原物料皆須配合向總部或總部指定廠商購買。</li>
+              <li>業主須於每週線上系統開放期間完成訂貨作業，其餘非指定時段需追加訂購商品或原物料將收取緊急處理費用。</li>
+              <li>人員應於收到商品、原物料後立即點交、驗收及入庫並依指定保存方式妥善保存。</li>
+              <li>人員應依照總部規範販售商品，包括但不限於周邊商品、限量產品等。</li>
+              <li>商品、原物料若有瑕疵或數量有誤應於點交當日立即回報總部，提供照片／影片並妥善保存，經總部或總部指定廠商確認瑕疵狀況屬實，將依流程辦理退貨作業。</li>
+            </ol>
+          </div>
+          <div class="policy-article">
+            <h5>第七條・安全管理</h5>
+            <ol>
+              <li>門市之機電、空調與消防設備皆由各業主自行負責，其設計及施作應遵照相關法規辦理。</li>
+              <li>業主應依消防法規定期進行消防安全培訓工作。人員有義務配合門市進行防火、防災以及疏散講解及實際演練等作業。</li>
+              <li>門市應遵守消防法規，不得阻礙、封閉或佔用樓梯間，亦不得佔用消防通道或影響消防器材設備功能，隨時保持走廊、梯間與消防逃生通道暢通。</li>
+              <li>人員應定期進行消防設備之自主檢查、實施保養維護，確保營業場所消防設備功能正常。</li>
+              <li>人員應清楚門市內之滅火設備位置、熟悉各逃生出口及逃生動線。</li>
+              <li>人員於離開門市前應確認總電源、水源、空調等設施已關閉。</li>
+              <li>門市應設置錄影監控設備，並確保至少保留 30 日之影像紀錄。遇有消費爭議或刑事案件時，業主應配合總部或司法機關調閱。</li>
+            </ol>
+          </div>
+          <div class="policy-article">
+            <h5>第八條・教育訓練</h5>
+            <ol>
+              <li>加盟業主應於開業前徵足開店所需人員，並指派包含負責人在內至少 5 名人員至總部指定地點完成教育訓練。基礎訓練時數原則為 45 個工作日（不含假日與國定假日），每日至少 6 小時。如總部另有規劃，依書面或電子通知為準。</li>
+              <li>前項規定之受訓名單如需更換，應於訓練開始前 5 個日曆日向總部提出申請並經同意，始得為之。</li>
+              <li>加盟業主因經營所需申請額外訓練者，應於預定受訓日前 14 日填寫指定表單，經總部審核並安排時段後始得受訓。</li>
+              <li>訓練結束後，派訓人員各項術科及學科測驗均須達 80 分以上並由總部獨立判斷加盟業主是否合於通常水準，始為合格結訓。</li>
+              <li>經總部認定未通過考核者，將安排第二次教育訓練，訓練日期原則為 7 個工作日，每日至少 6 小時。若經第二次訓練後仍未通過考核，或受訓期間有遲到、早退、態度惡劣、違反訓練場地規範者，總部有權予以全部退訓。</li>
+              <li>遭退訓或自簽約日起逾 90 日仍無法通過考核者，得列為重大違約之認定事實之一，總部得依加盟契約第 17、18 條辦理。</li>
+              <li>本管理辦法所稱「極端情形」，係指加盟業主或其派訓人員有下列情事之一，且已影響教育訓練目的之達成或加盟體系正常運作者，包括但不限於：
+                <ol>
+                  <li>無正當理由拒絕參與教育訓練、惡意中斷訓練或經通知仍不到訓；</li>
+                  <li>受訓期間有重大違反訓練規範之行為（如蓄意擾亂秩序、辱罵講師、暴力、性騷擾等）；</li>
+                  <li>經退訓後拒不配合補訓、改善或後續管理措施；</li>
+                  <li>其他足認加盟業主已無履行加盟契約或教育訓練誠信基礎之情形。</li>
+                </ol>
+              </li>
+              <li>加盟業主簽約時交付之新台幣 50 萬元保證金本票，其擔保範圍涵蓋所有應付之教育訓練費用。若加盟業主經退訓或未合格結訓或有前項所定極端情形時，總部得不予返還本票，並得依加盟契約關於違約罰則、本票或保證金之相關約定辦理。</li>
+              <li>受訓期間如有遲到、早退、態度不良或違反受訓場地規範者，每次依年度積分制度扣分；情節嚴重（如曠課、騷擾講師）者，總部有權逕行判定退訓。</li>
+              <li>加盟業主應親自或按總部指定人員參加回訓課程、研討會。如欲請假，應於舉辦 20 日前遞交假單。累計達 2 次未經同意而缺席者，視同重大違約，依加盟契約第 17 條辦理。</li>
+              <li>教育訓練、回訓、二次訓練、更換人員受訓等各項規費（含課程費、材料耗損、行政規費等）或總部派員駐店輔導之食宿交通費等費用，由總部配合營運狀況、成本變動或政策調整，其金額由總部依營運現況彈性調整，於受訓或輔導前以書面或電子方式通知加盟業主，不另行公告。加盟業主應依通知金額及期限完成繳納。</li>
+              <li>受訓期間之一般違規（如服儀不整、輕微遲到），每次依年度積分制度扣分；情節嚴重者則適用本條第 5 項規定予以退訓。</li>
+              <li>總部派員駐店輔導之食宿、交通及規費，由加盟業主全額負擔。</li>
+              <li>營業時間內，加盟業主店內應至少留有一位受過總部所定訓練且通過考核（領有合格證書或紀錄備查）之人員於現場執行業務。若遇政府機關（如衛生局）稽查，加盟業主應確保現場人員具備足以應對稽查之產品知識與食安等規範認知。違反本項規定者，除依年度積分制度扣分外，若因此導致總部遭受裁罰或品牌受損，加盟業主應承擔全部賠償責任。</li>
+            </ol>
+          </div>
+          <div class="policy-article">
+            <h5>第九條・考核及衛生稽核</h5>
+            <ol>
+              <li>業主應確保人員接受總部之標準化訓練，熟悉產品製作與服務流程。</li>
+              <li>業主應定期考核人員表現，並將考核結果紀錄留存備查。</li>
+              <li>總部依食品衛生管理法、食品安全管制系統準則、其他餐飲衛生相關法令規章（包括 HACCP 管理制度）或本管理規範等，不定期至門市內稽查、複查，稽查項目包含但不限於營業場所環境衛生、衛生品質管理、從業人員衛生管理等。</li>
+              <li>業主應就稽查項目列表定期檢視門市情況，並應接受總部、總部委託之外包廠商及政府相關單位之定期或不定期衛生稽查。經查如有缺失須限期改善，若未配合限期改善者或有嚴重缺失者，總部得要求立即停業改善，如因而致費用包括但不限於複檢費用，由業主自行承擔。</li>
+            </ol>
+          </div>
+          <div class="policy-article">
+            <h5>第十條・收銀、發票及帳務管理</h5>
+            <ol>
+              <li>銷售商品時應以消費者選擇的付款方式報帳，業主及人員不得私自改變支付方式（如消費者以現金支付，門市人員改以信用卡支付）。</li>
+              <li>業主應依雙方約定，接受消費者使用合作支付方式或行銷活動的優惠、折扣。</li>
+              <li>門市應依財政部相關法規，正確開立統一發票，並妥善保存發票存根聯，以供備查。</li>
+              <li>顧客消費時人員應正常操作收銀系統、進行結帳作業，並開立與消費金額相同之發票及消費明細。</li>
+              <li>門市應使用總部指定之收銀系統，確保交易紀錄完整且即時上傳，如遇設備故障狀況應立即報修、主動記錄並於復機後補登記錄及補開發票。</li>
+              <li>門市應於每日人員離場前完成營業帳務結算並確實執行清機作業，確認資料完整上傳。</li>
+            </ol>
+          </div>
+          <div class="policy-article">
+            <h5>第十一條・POS 系統及會員系統管理</h5>
+            <ol>
+              <li>門市應依加盟契約約定，使用總部指定之 POS 系統、會員系統及其相關模組，並確保系統於營業時間內正常連線與運作，不得任意中斷、關閉或規避使用。</li>
+              <li>加盟業主應依加盟契約約定，按月給付 POS 系統使用之必要費用，包括但不限於：
+                <ol>
+                  <li>POS 軟體服務費；</li>
+                  <li>電子發票整合服務費；</li>
+                  <li>外送平台系統服務費；</li>
+                  <li>會員系統使用費（每月新臺幣 1,000 元整）。</li>
+                </ol>
+              </li>
+              <li>前項費用以門市點交日起算，不足月者依比例計算；計費方式、繳付義務，悉依加盟契約辦理。</li>
+              <li>門市如有下列情形之一者，視為影響正常交易秩序之重大管理缺失，是否屬可歸責於加盟業主之事由，悉由總部依實際營運狀況綜合判斷：
+                <ol>
+                  <li>無正當理由使 POS 收銀系統未連線達連續二日以上，或於契約期間內累計達三日；</li>
+                  <li>因可歸責於門市或其人員之事由，致 POS 或會員系統資料遺失、缺漏或毀損；</li>
+                  <li>規避或拒絕使用會員系統進行交易、累點或資料登錄。</li>
+                </ol>
+              </li>
+              <li>無正當理由未使用或中斷 POS／會員系統，致交易無法正常進行者，視為拒絕與顧客交易。除依加盟契約相關約定，認定為重大違約外，並應依年度積分制度處理。</li>
+              <li>門市於營業過程中所蒐集、產生或使用之會員資料，均屬總部營運管理體系之一部分，加盟業主僅得於本加盟體系及總部指示之範圍內使用，不得另作他用、匯出、提供第三人或自行建置會員系統。</li>
+            </ol>
+          </div>
+          <div class="policy-article">
+            <h5>第十二條・票券類使用管理</h5>
+            <ol>
+              <li>紙本票券、電子票券、寄杯票券等，由總部統一製作與發行，不得自行印製或仿造。</li>
+              <li>票券皆標示相關使用規範，不得擅自拒絕或對使用設置額外限制。</li>
+              <li>顧客使用時，門市應檢查票券真偽與有效性，遇疑義或特殊情況，應即時聯繫總部確認。</li>
+              <li>人員應每日確認核對票券數量及帳務正確性，並依規定核銷結算。</li>
+            </ol>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="section" id="policy-ch3">
+        <div class="section-head" onclick="toggleAcc('policy-ch3')">
+          <div class="num">三</div>
+          <div style="flex:1;min-width:0;"><div class="section-title" style="font-size:14.5px;">第三章・營運年度積分制度</div><div class="section-sub">積分概述、扣分罰則、加分制度</div></div>
+          <div class="chev">▾</div>
+        </div>
+        <div class="section-body"><div class="card-pad">
+          <p style="font-size:12.5px; line-height:1.8; color:var(--ink-soft); margin:0 0 14px;">
+            為維持品牌一致性、確保門市營運品質並提升顧客滿意度，本公司特制定《年度積分制度》作為營運管理之依據。本制度以標準化之管理指標為基礎，針對各加盟門市於門市營運、產品品質控管、服務流程、衛生安全、文件回收、教育訓練及品牌形象維護等層面進行年度性評核。透過積分制度之執行，能有效掌握各門市執行情形，協助總部即時調整輔導策略，強化營運體系整體競爭力。評核結果將作為年度獎勵、督導重點、合約續約與升降級制度之參考依據，進一步打造公開、公平且具激勵性的加盟營運管理模式。為保障各業主及所有人員權益，並強化管理規定之效力，此管理辦法所載之『營運規範及罰則』、請業主及其所有聘僱人員詳細閱讀，並確實遵守。
+          </p>
+
+          <div class="policy-article">
+            <h5>第一條・積分制度概述</h5>
+            <ol>
+              <li>本制度採扣分制，各門市年度初始分數為 100 分，若經查獲違規／獎勵事項屬實將依對應違規／獎勵項目進行扣分／加分。</li>
+              <li>積分結果每半年公告一次，業主或門市對於評分結果有異議，可於收到通知後 7 日內提出申訴，總部將依情況進一步審查。</li>
+              <li>年度最終積分結果分為以下四類級距管理，總部有權依當年度營業狀態調整獎勵措施及處置方式：</li>
+            </ol>
+            <div style="margin-top:10px;">
+              <div class="policy-tier">
+                <div class="tier-head"><span class="tier-title">優良門市</span><span class="tier-score" style="color:#073C4E;">90 分（含）以上</span></div>
+                <div style="font-size:12px;color:var(--ink-soft);">門市營運與管理表現優異，符合並超越總部管理標準，將列為年度重點表揚對象。</div>
+                <ul>
+                  <li>免收取年度新台幣 15 萬元權利金</li>
+                  <li>採購優惠：依年度規劃之品項、內容提供優惠</li>
+                  <li>優先續約權：於加盟契約續約時，享有優先續約資格</li>
+                  <li>品牌推廣支持：總部於重要檔期提供免費行銷資源（如廣告投放等）</li>
+                  <li>榮譽認證：頒發「年度優質門市」獎項</li>
+                </ul>
+              </div>
+              <div class="policy-tier">
+                <div class="tier-head"><span class="tier-title">符合總部標準</span><span class="tier-score" style="color:#3E7A52;">75–89 分</span></div>
+                <div style="font-size:12px;color:var(--ink-soft);">門市營運表現符合總部於管理、品質與營運面之基本要求。</div>
+                <ul><li>獎勵措施：免收取年度新台幣 15 萬元權利金</li></ul>
+              </div>
+              <div class="policy-tier">
+                <div class="tier-head"><span class="tier-title">持續觀察門市</span><span class="tier-score" style="color:#B0813A;">60–74 分</span></div>
+                <div style="font-size:12px;color:var(--ink-soft);">門市整體表現尚有改善空間，需加強管理落實。</div>
+                <ul><li>處置方式：收取年度新台幣 15 萬元權利金，並列為總部持續追蹤與輔導之門市。</li></ul>
+              </div>
+              <div class="policy-tier">
+                <div class="tier-head"><span class="tier-title">未達管理標準</span><span class="tier-score" style="color:#A23B2E;">59 分（含）以下</span></div>
+                <div style="font-size:12px;color:var(--ink-soft);">門市營運與管理表現未符合總部基本要求。</div>
+                <ul><li>處置方式：不予續約，後續相關事宜將依加盟契約及《加盟門市管理辦法》辦理。</li></ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="policy-article">
+            <h5>第二條・營運規範及扣分罰則</h5>
+            <div class="policy-table-wrap">
+              <table class="policy-table">
+                <thead><tr><th>違規事項說明</th><th>扣分罰則</th></tr></thead>
+                <tbody>
+                  <tr class="policy-cat-row"><td colspan="2">營業相關</td></tr>
+                  <tr><td>1. 違反營業內容及門市使用規範（如：轉租營業空間）。</td><td class="pt-penalty">扣 10 分／次</td></tr>
+                  <tr><td>2. 未經申請通過擅自調整營業時間、暫停營業、停止營業。</td><td class="pt-penalty">扣 5 分／次</td></tr>
+                  <tr><td>3. 未準時營業、無故間歇、提前營業或延後營業。</td><td class="pt-penalty">扣 5 分／次</td></tr>
+                  <tr><td>4. 營業時間內，拒絕與顧客交易。</td><td class="pt-penalty">扣 5 分／次</td></tr>
+                  <tr><td>5. 臨時店休或變更營業時間，未於門市明顯處公告告知消費者。</td><td class="pt-penalty">扣 2 分／次</td></tr>
+                  <tr class="policy-cat-row"><td colspan="2">門市／人員管理</td></tr>
+                  <tr><td>6. 利用職務之便，以不正當方法取得、使用或洩漏業務相關資料，包括但不限於：刷卡或使用其他支付工具、參加行銷活動、累計會員消費金額或點數。</td><td class="pt-penalty">扣 10 分／次</td></tr>
+                  <tr><td>7. 未積極處理顧客反映，包括但不限於：顧客訴願、消費爭議。</td><td class="pt-penalty">扣 5 分／次</td></tr>
+                  <tr><td>8. 因商品品質、服務流程或觀感不佳等造成顧客不便或引發客訴者。</td><td class="pt-penalty">扣 3 分／次</td></tr>
+                  <tr><td>9. 未保持營業場所環境整潔，包括但不限於：開店前環境清潔、定期／非定期清消。</td><td class="pt-penalty">扣 3 分／次</td></tr>
+                  <tr><td>10. 未符合服裝儀容規範、保持整齊清潔，或舉止散漫、姿態委靡等影響品牌形象者。</td><td class="pt-penalty">扣 2 分／次</td></tr>
+                  <tr><td>11. 未依規範確實保存相關文件並成冊管理（如：人員聘僱名冊、健康檢查報告等）。</td><td class="pt-penalty">扣 2 分／次</td></tr>
+                  <tr class="policy-cat-row"><td colspan="2">商品／物料／設備／安全管理</td></tr>
+                  <tr><td>12. 擅自變更營業項目、販售價格或促銷活動（如：販售非可不可熟成紅茶推出之商品）。</td><td class="pt-penalty">扣 10 分／次</td></tr>
+                  <tr><td>13. 未符合總部標準作業流程及製程比例。</td><td class="pt-penalty">扣 10 分／次</td></tr>
+                  <tr><td>14. 商品、原物料或設備未依規範來源購買或擅自變更使用方式及目的。</td><td class="pt-penalty">扣 10 分／次</td></tr>
+                  <tr><td>15. 設備未符合相關法規或安全標準。</td><td class="pt-penalty">扣 10 分／次</td></tr>
+                  <tr><td>16. 可能影響消防設備功能，或違反消防法規之行為（如：堆放貨品致消防逃生動線遭阻擋）。</td><td class="pt-penalty">扣 5 分／次</td></tr>
+                  <tr><td>17. 未定期進行設備之自主檢查、保養維護，或設備無法正常使用。</td><td class="pt-penalty">扣 3 分／次</td></tr>
+                  <tr><td>18. 未依流程進行訂貨、驗貨、退貨作業。</td><td class="pt-penalty">扣 3 分／次</td></tr>
+                  <tr><td>19. 未依規範標示食材成分、來源與保存期限或未確實管理維護。</td><td class="pt-penalty">扣 2 分／次</td></tr>
+                  <tr class="policy-cat-row"><td colspan="2">廣告宣傳／行銷規劃／商標使用</td></tr>
+                  <tr><td>20. 未配合總部執行行銷活動。</td><td class="pt-penalty">扣 5 分／次</td></tr>
+                  <tr><td>21. 因管理不當產生負面評論或輿論，包括但不限於：社群媒體負面報導。</td><td class="pt-penalty">扣 5 分／次</td></tr>
+                  <tr><td>22. 未符合商標、宣傳物或其他告示張貼物之使用規範。</td><td class="pt-penalty">扣 4 分／次</td></tr>
+                  <tr><td>23. 門市內播放無公播版權之音樂。</td><td class="pt-penalty">扣 3 分／次</td></tr>
+                  <tr><td>24. 擅自於營業場所內從事攝影拍照或錄影行為。</td><td class="pt-penalty">扣 3 分／次</td></tr>
+                  <tr class="policy-cat-row"><td colspan="2">教育訓練／衛生稽核</td></tr>
+                  <tr><td>25. 違反主管機關或總部之衛生規範或各項管制措施、規範，經檢查不合格者。</td><td class="pt-penalty">扣 5 分／次</td></tr>
+                  <tr><td>26. 違反食品衛生管理法、食品安全管制系統準則、其他餐飲衛生相關法令規章（包括 HACCP 管理制度）或總部管理規範。</td><td class="pt-penalty">扣 5 分／次</td></tr>
+                  <tr><td>27. 未配合主管機關、總部或總部指定廠商之定期或不定期之檢查、稽核作業，或未於指定期間內依檢查、稽核結果完成改善者。</td><td class="pt-penalty">扣 4 分／次</td></tr>
+                  <tr><td>28. 人員未配合、未進行總部之標準化訓練，包括但不限於：年度教育訓練、新進人員教育訓練。</td><td class="pt-penalty">扣 3 分／次</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="policy-article">
+            <h5>第三條・加分制度</h5>
+            <p style="font-size:12px;">為提升加盟體系營運品質，鼓勵門市積極落實品牌標準，特訂定『加分制度』作為管理輔助工具，本制度秉持正向激勵與公平公開原則，透過定期評核、日常表現及專案活動，給予表現優異之門市與人員應有的肯定與獎勵，期許加盟夥伴與總部共同成長，創造雙贏局面。</p>
+            <div class="policy-table-wrap">
+              <table class="policy-table">
+                <thead><tr><th>加分事項說明</th><th>加分獎勵</th></tr></thead>
+                <tbody>
+                  <tr class="policy-cat-row"><td colspan="2">營業表現優異</td></tr>
+                  <tr><td>1. 年度營業額對比前一年度呈現成長。</td><td class="pt-bonus">110%以上：加10分<br>120%以上：加15分</td></tr>
+                  <tr><td>2. 顧客滿意度調查綜合表現佳，包括但不限於顧客意見、電話進線、官網、Google 評論。</td><td class="pt-bonus">90分以上：加10分</td></tr>
+                  <tr class="policy-cat-row"><td colspan="2">管理績效優異</td></tr>
+                  <tr><td>3. 連續 6 個月衛生稽核、安全稽核無缺失。</td><td class="pt-bonus">加 3 分／項</td></tr>
+                  <tr><td>4. 定期主動安排人員教育訓練，包括但不限於消防相關、營業相關並提交相關績效報告。</td><td class="pt-bonus">加 3 分／次</td></tr>
+                  <tr class="policy-cat-row"><td colspan="2">品牌推廣</td></tr>
+                  <tr><td>5. 積極推廣品牌會員且成效顯著。</td><td class="pt-bonus">加 3 分／次</td></tr>
+                  <tr><td>6. 優質服務在社群媒體上獲得正面評價並被廣泛分享或點擊率達 100 次（含）以上。</td><td class="pt-bonus">加 3 分／次</td></tr>
+                  <tr><td>7. 積極主動處理顧客訴願，符合 D+2 處理標準（如：專業地回應社群媒體上的顧客評論）。</td><td class="pt-bonus">加 3 分／季</td></tr>
+                  <tr class="policy-cat-row"><td colspan="2">服務創新／永續發展</td></tr>
+                  <tr><td>8. 提出行銷或服務相關創新建議並經評估採納執行。</td><td class="pt-bonus">加 3 分／項</td></tr>
+                  <tr><td>9. 主動積極配合公益活動參與並提供相關證明。</td><td class="pt-bonus">加 3 分／次</td></tr>
+                  <tr><td>10. 經總部認可，有效實施節能或提升效能措施。</td><td class="pt-bonus">加 2 分／次</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="policy-note">本辦法於 2025 年 12 月修訂，如有未盡事宜，悉依總部公告或依相關法令之規定辦理。</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-pad">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+        <h3 class="serif" style="margin:0; font-size:15.5px;">稽核流程</h3>
+        <button type="button" class="btn-ghost" style="padding:5px 10px; font-size:11.5px;" onclick="resetFlowDefaults()">還原預設文字</button>
+      </div>
+      <div style="font-size:11.5px; color:var(--ink-faint); margin-bottom:14px;">點選框內文字即可直接編輯，異動會自動同步給所有使用者</div>
+      <div class="flow-tree">
+        <div class="flow-row">
+          <div class="flow-node flow-blue" contenteditable="true" spellcheck="false" data-flow="n1"></div>
+          <div class="flow-arrow-h">→</div>
+          <div class="flow-node flow-orange" contenteditable="true" spellcheck="false" data-flow="n2"></div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-node flow-tan" contenteditable="true" spellcheck="false" data-flow="n3"></div>
+        <div class="flow-branch">
+          <div class="flow-branch-left">
+            <div class="flow-edge-label flow-pass" contenteditable="true" spellcheck="false" data-flow="lbl1"></div>
+            <div class="flow-node flow-brown" contenteditable="true" spellcheck="false" data-flow="n4"></div>
+          </div>
+          <div class="flow-branch-right">
+            <div class="flow-edge-label flow-fail" contenteditable="true" spellcheck="false" data-flow="lbl2"></div>
+            <div class="flow-node flow-tan" contenteditable="true" spellcheck="false" data-flow="n5"></div>
+            <div class="flow-connector small"></div>
+            <div class="flow-node flow-tan" contenteditable="true" spellcheck="false" data-flow="n6"></div>
+            <div class="flow-branch">
+              <div class="flow-branch-left">
+                <div class="flow-edge-label flow-pass" contenteditable="true" spellcheck="false" data-flow="lbl3"></div>
+                <div class="flow-node flow-brown" contenteditable="true" spellcheck="false" data-flow="n7"></div>
+              </div>
+              <div class="flow-branch-right">
+                <div class="flow-edge-label flow-fail" contenteditable="true" spellcheck="false" data-flow="lbl4"></div>
+                <div class="flow-node flow-red" contenteditable="true" spellcheck="false" data-flow="n8"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="view-analytics" style="display:none;">
+  <div class="search-row" style="align-items:center; flex-wrap:wrap;">
+    <h3 class="serif" style="margin:0; font-size:16px; flex:1;">稽核數據總覽</h3>
+    <select id="an-year" onchange="renderAnalytics()" style="width:auto; flex:none;"></select>
+    <select id="an-period" onchange="renderAnalytics()" style="width:auto; flex:none;">
+      <option value="full">整年度總覽</option>
+      <option value="h1">上半年度（1-6月）</option>
+      <option value="h2">下半年度（7-12月）</option>
+    </select>
+  </div>
+  <div id="an-content"></div>
+</div>
+
+
+<div class="footerbar" id="footerbar">
+  <div class="footerbar-inner">
+    <div class="save-status" id="save-status">尚未儲存</div>
+    <button class="btn-ghost" onclick="window.print()">列印 / PDF</button>
+    <button class="btn-primary" id="submit-btn" onclick="proceedToReview()">完成</button>
+  </div>
+</div>
+
+<div class="modal-mask" id="review-modal-mask">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 class="serif">確認稽核內容</h3>
+      <button class="modal-close" onclick="closeReviewModal()">✕</button>
+    </div>
+    <div class="modal-body" id="review-modal-body"></div>
+    <div style="position:sticky; bottom:0; background:var(--bg); border-top:1px solid var(--line); padding:12px 16px; display:flex; gap:10px;">
+      <button type="button" class="btn-ghost" style="flex:1;" onclick="closeReviewModal()">返回修改</button>
+      <button type="button" class="btn-primary" style="flex:1;" onclick="confirmReviewGoSign()">內容無誤，前往簽名</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask" id="modal-mask" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h3 id="modal-title" class="serif">稽核詳情</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+/* ============ STORAGE FALLBACK (standalone / local-file usage) ============
+   If this file is opened directly in a browser (not inside a Claude.ai
+   Artifact), window.storage does not exist. This installs a localStorage-
+   backed shim with the identical API so the rest of the app works unchanged.
+   NOTE: in this fallback mode, data is only saved on THIS device/browser and
+   is NOT shared with other users — unlike the real window.storage inside
+   Claude.ai, which syncs data to everyone viewing the Artifact.
+============================================================================ */
+window.__usingLocalStorageFallback = false;
+if(typeof window.storage === 'undefined'){
+  window.__usingLocalStorageFallback = true;
+  (function(){
+    const LS_NS = 'kebuke-audit-app::';
+    function fullKey(key, shared){ return LS_NS + (shared ? 'shared::' : 'personal::') + key; }
+    window.storage = {
+      async get(key, shared){
+        try{
+          const raw = localStorage.getItem(fullKey(key, shared));
+          if(raw === null) return null;
+          return {key, value: raw, shared: !!shared};
+        }catch(e){ return null; }
+      },
+      async set(key, value, shared){
+        try{
+          localStorage.setItem(fullKey(key, shared), value);
+          return {key, value, shared: !!shared};
+        }catch(e){ return null; }
+      },
+      async delete(key, shared){
+        try{
+          localStorage.removeItem(fullKey(key, shared));
+          return {key, deleted:true, shared: !!shared};
+        }catch(e){ return null; }
+      },
+      async list(prefix, shared){
+        try{
+          const base = fullKey('', shared);
+          const keys = [];
+          for(let i=0;i<localStorage.length;i++){
+            const k = localStorage.key(i);
+            if(k && k.startsWith(base)){
+              const realKey = k.slice(base.length);
+              if(!prefix || realKey.startsWith(prefix)) keys.push(realKey);
+            }
+          }
+          return {keys, prefix, shared: !!shared};
+        }catch(e){ return null; }
+      }
+    };
+  })();
+}
+
+/* ============ DATA ============ */
+const STORE_REGIONS = {
+  "台中市": [
+    "大甲順天店",
+    "大里成功店",
+    "太平樹孝店",
+    "西屯中科店",
+    "東區十甲店",
+    "神岡中山店",
+    "霧峰中正店",
+    "大雅民生店",
+    "北屯四平店",
+    "台中后里店",
+    "台中烏日店",
+    "台中黎明店",
+    "台中向上店",
+    "大里中興店",
+    "台中大智店",
+    "台中工學店",
+    "台中東勢店",
+    "潭子勝利店",
+    "第二市場店",
+    "一中太平店",
+    "大雅學府店",
+    "台中西屯店",
+    "台中清水店",
+    "東海遊園店",
+    "豐原南陽店",
+    "台中健行店",
+    "重慶青海店",
+    "豐原廟東店",
+    "太平長億店",
+    "台中龍井店",
+    "沙鹿靜宜店",
+    "台中精誠店",
+    "北屯崇德店",
+    "台中大肚店",
+    "台中朝富店",
+    "東山軍功店",
+    "梧棲文化店",
+    "逢甲福星店",
+  ],
+  "彰化縣": [
+    "永靖瑚璉店",
+    "鹿港民權店",
+    "員林靜修店",
+    "彰化花壇店",
+    "員林中正店",
+    "鹿港鹿東店",
+    "彰化二林店",
+    "彰化秀水店",
+    "彰化田中店",
+    "彰化和美店",
+    "彰化北斗店",
+    "彰化彰南店",
+    "彰化中正店",
+    "彰化民族店",
+    "彰化溪湖店",
+  ],
+  "南投縣": [
+    "南投民族店",
+    "南投埔里店",
+    "南投草屯店",
+    "南投竹山店",
+  ],
+  "雲林縣": [
+    "雲林北港店",
+    "雲林麥寮店",
+    "雲林西螺店",
+    "雲林斗六店",
+    "雲林斗南店",
+    "雲林虎尾店",
+  ],
+  "嘉義市": [
+    "嘉義後庄店",
+    "嘉義民族店",
+  ],
+  "嘉義縣": [
+    "嘉義朴子店",
+    "嘉義民雄店",
+  ],
+  "台南市": [
+    "台南大灣店",
+    "台南仁德店",
+    "台南安平店",
+    "台南安和店",
+    "永康大橋店",
+    "新市南科店",
+    "台南市醫店",
+    "台南東安店",
+    "台南青年店",
+    "台南歸仁店",
+    "新營中山店",
+    "台南新興店",
+    "南科樹谷店",
+    "台南公園店",
+    "台南佳里店",
+    "善化中山店",
+    "台南文賢店",
+  ],
+  "高雄市": [
+    "左營崇德店",
+    "高雄自立店",
+    "高雄瑞豐店",
+    "楠梓德賢店",
+    "漢神自強店",
+    "鳳山光遠店",
+    "左營裕誠店",
+    "高雄林園店",
+    "高雄仁武店",
+    "高雄路竹店",
+    "高雄鼎中店",
+    "小港漢民店",
+    "高雄青海店",
+    "高雄新光店",
+    "高雄旗山店",
+    "楠梓藍昌店",
+    "高雄文化店",
+    "岡山維仁店",
+    "前鎮瑞隆店",
+    "高雄大寮店",
+    "高雄大社店",
+    "高雄熱河店",
+    "高雄正興店",
+    "高雄西子灣店",
+    "高雄橋頭店",
+    "楠梓鳳楠店",
+    "鳳山五甲店",
+    "高雄左大店",
+    "高雄覺民店",
+  ],
+  "屏東縣": [
+    "屏東內埔店",
+    "屏東勝利店",
+    "恆春中正店",
+    "屏東萬丹店",
+    "屏東廣東店",
+    "屏東東港店",
+    "潮州新生店",
+  ],
+  "離島": [
+    "金門金城店",
+    "小琉球店",
+  ],
+  "商場特規": [
+    "漢神巨蛋店",
+    "新烏日台鐵店",
+    "台南新光三越西門店",
+    "高雄新光三越左營店",
+    "新營休息站店",
+    "新營服務區-南站",
+  ],
+};
+
+const SECTIONS = [
+  { id:'s1', title:'門面管理', items:[
+    {n:1,pts:5,text:'門面及櫃檯擺放符合公司規範（不可自製文宣、廣告、活動文宣無破損、文件擺放整齊等）。'},
+    {n:2,pts:5,text:'門市廣告帆布、橫式布條（展架）、招牌無掉漆破損、無字體脫落。'},
+    {n:3,pts:5,text:'工作人員服儀符合標準：穿著正確制服、深色長褲、包鞋、配戴名牌、工作帽、口罩，若擦拭指甲油需戴手套、頭髮整齊不披頭散髮，及肩長度需紮單馬尾、瀏海過長以黑色髮夾夾起、不得配戴任何飾品。'},
+    {n:4,pts:2,text:'門市播放音樂符合品牌使用之授權音樂管道（總部提供的清單）。'},
+    {n:5,pts:2,text:'門市及原物料倉庫桌面／層架保持清潔整齊。'},
+    {n:6,pts:2,text:'落實門市內外環境、設備整潔、冰箱無結霜、工作區域地面清潔、無積水、平整。'},
+    {n:7,pts:3,text:'牆面、燈罩、天花板、出／迴風口等是否無積塵、長黴、剝落，燈具無損壞而未修護（已報修）。'},
+    {n:8,pts:2,text:'門市人員符合禮儀規範（不可站姿三七步、倚靠櫃台、滑手機）。'},
+    {n:9,pts:3,text:'無私下販售已下架之商品（檔期商品／檔期飲品等）。'},
+    {n:10,pts:5,text:'無未經總部同意擅自辦理單店活動（自行促銷／優惠活動等）。'},
+  ]},
+  { id:'s2', title:'服務及流程管理', items:[
+    {n:1,pts:2,text:'點單／電話人員喊第一聲招呼語「您好／可不可○○店您好」。'},
+    {n:2,pts:2,text:'包裝人員落實叫號、喊歡送詞，包裝人員落實雙手呈遞。'},
+    {n:3,pts:2,text:'其他人員落實複誦招呼語、歡送詞。'},
+    {n:4,pts:3,text:'落實與客人詢問甜度冰塊是否需調整，結帳前核對飲品內容、數量正確（電話需確認外送資訊、自取結帳方式等）。'},
+    {n:5,pts:3,text:'結帳前告知客人結帳金額，收找零程序確實覆誦並驗鈔，收錢時、給單找零時是否用雙手給，並主動詢問是否需要載具（統編）、會員，主動提醒注意事項等候時間、正確開立發票。'},
+    {n:6,pts:3,text:'門市人員保持服務語氣親和有耐心、口吻清晰，飲品介紹答覆無誤、活動飲品主動推薦（試喝）。'},
+    {n:7,pts:3,text:'門市人員適時指引顧客方向，隨時注意客人等候並進行安撫。'},
+    {n:8,pts:2,text:'門市人員熟悉POS、會員及活動操作流程。'},
+    {n:9,pts:2,text:'自取、外送飲品冰入冰箱正確區域、溫熱飲存放無誤。'},
+    {n:10,pts:2,text:'門市人員出餐前核對正確飲品項目、吸管數量，提醒注意事項（飲用前須搖晃均勻、注意溫度）。'},
+    {n:11,pts:3,text:'配料等物料保存方式無誤，確實標示分裝日期及保存期限（時間）。', tags:['白玉','果凍','水玉','冬瓜','冰淇淋','檸檬汁','咖啡液','其他']},
+  ]},
+  { id:'s3', title:'品質及作業流程管理', items:[
+    {n:1,pts:8,text:'電子微量秤扣重、飲品物料（加料／冰塊／糖／醬料／茶湯等）加入克數正確。'},
+    {n:2,pts:8,text:'廚房區茶品及物料煮製流程無誤，原料比例克數符合規範。'},
+    {n:3,pts:8,text:'活性碳、PP濾心（濾心系統）更換日程合乎標準、落實紀錄。'},
+    {n:4,pts:8,text:'無使用非公司限定之原物料，非正規進貨流程。'},
+    {n:5,pts:3,text:'無擅自竄改公司標準製作流程，原物料標示進貨日期符合先進先出原則。'},
+    {n:6,pts:3,text:'搖杯動作確實且正確執行，擦杯動作確定無漏杯。'},
+    {n:7,pts:3,text:'每一桶茶品保存期限有標示明確並符合效期。'},
+    {n:8,pts:3,text:'下茶茶湯量足夠，封杯有對齊Logo位置。'},
+    {n:9,pts:2,text:'吧台器具、濾杯無茶垢，標籤貼紙張貼位置、擇杯正確，飲品製作過程無食安疑慮（手指扣杯、觸碰冰塊）。'},
+    {n:10,pts:2,text:'製冰機／糖液定量機內部、儲槽、出冰口落實清潔無發霉。'},
+    {n:11,pts:3,text:'前場及廚房抹布分類明確，廚房清潔用鍋具標示明確無使用疑慮（使用藍色、棕色、灰色確實分區使用：擦杯、擦食品相關、清潔）。'},
+    {n:12,pts:3,text:'糖液定量機糖液克數及甜度、冬瓜茶甜度校正符合標準。'},
+  ]},
+];
+const APPEAR_OPTS = ['淺','適中','深','乳化'];
+const TASTE_OPTS = ['苦','微苦','澀','微澀','適中'];
+const ICE_OPTS = ['正常冰','少冰','微冰','去冰','常溫','溫','熱'];
+const SUGAR_OPTS = ['全糖','少糖','半糖','微糖','一分糖','無糖'];
+const SCHED_TYPE_OPTS = ['首次稽核','督導複核','食安部協同複核'];
+const DEFAULT_TEAS = ['熟成紅茶','胭脂紅茶','春芽綠茶','麗春紅茶','半熟／茶花烏龍'];
+
+/* ============ STATE ============ */
+let state = {
+  store:'', date:new Date().toISOString().slice(0,10), auditType:'首次稽核',
+  auditor:'', supervisor:'',
+  items:{}, // key `${sectionId}-${n}` -> {answer:null|'yes'|'no', major:false, tags:[]}
+  teas:[], // {id,name,ice,sugar,appearance,aroma,taste:[],normal,note}
+  checklist:{nozzle:false, enzyme:false, log:false},
+  feedback:'', notes:'',
+  sigAuditor:null, sigSupervisor:null,
+};
+let teaSeq = 0;
+
+function initState(){
+  SECTIONS.forEach(sec=>{
+    sec.items.forEach(it=>{
+      const key = `${sec.id}-${it.n}`;
+      state.items[key] = {answer:null, major:false, tags:[], note:''};
+    });
+  });
+  DEFAULT_TEAS.forEach(name=> state.teas.push(newTea(name)));
+}
+function newTea(name){
+  teaSeq++;
+  return {id:'t'+teaSeq, name:name||'', ice:'', sugar:'', appearance:'', aroma:0, taste:[], normal:null, note:''};
+}
+
+/* ============ RENDER SECTIONS ============ */
+function totalItemCount(){
+  return SECTIONS.reduce((a,s)=>a+s.items.length,0);
+}
+function renderSections(){
+  const root = document.getElementById('sections');
+  root.innerHTML = '';
+  SECTIONS.forEach((sec, si)=>{
+    const secEl = document.createElement('div');
+    secEl.className = 'section' + (si===0 ? ' open' : '');
+    secEl.id = 'sec-'+sec.id;
+    const maxPts = sec.items.reduce((a,i)=>a+i.pts,0);
+    secEl.innerHTML = `
+      <div class="section-head" onclick="toggleSection('${sec.id}')">
+        <div class="num">${['一','二','三'][si]}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="section-title">${sec.title}</div>
+          <div class="section-sub" id="sub-${sec.id}">共 ${sec.items.length} 項・上限扣分 ${maxPts} 分</div>
+        </div>
+        <div class="chev">▾</div>
+      </div>
+      <div class="section-body" id="body-${sec.id}"></div>
+    `;
+    root.appendChild(secEl);
+    const body = secEl.querySelector('.section-body');
+    sec.items.forEach(it=>{
+      const key = `${sec.id}-${it.n}`;
+      const row = document.createElement('div');
+      row.className = 'item';
+      row.id = 'item-'+key;
+      let tagsHtml = '';
+      if(it.tags){
+        tagsHtml = `<div class="item-tags">` + it.tags.map(t=>`<button type="button" class="tag-chip" onclick="toggleTag('${key}','${t}',this)">${t}</button>`).join('') + `</div>`;
+      }
+      row.innerHTML = `
+        <div class="item-top">
+          <div class="item-idx">${it.n}.</div>
+          <div class="item-text">${it.text}<span class="item-pts">${it.pts}分</span></div>
+        </div>
+        <div class="item-actions">
+          <button type="button" class="yn-btn yes" onclick="setAnswer('${key}','yes',this)">是</button>
+          <button type="button" class="yn-btn no" onclick="setAnswer('${key}','no',this)">否</button>
+        </div>
+        <div class="major-row" id="major-${key}">
+          <label><input type="checkbox" onchange="setMajor('${key}',this.checked)"> 標記為重大缺失（將立即停業改善）</label>
+        </div>
+        <div class="item-note-row" id="note-${key}">
+          <textarea placeholder="請說明現況與原因，供後續追蹤改善…" oninput="setItemNote('${key}',this.value)"></textarea>
+        </div>
+        ${tagsHtml}
+      `;
+      body.appendChild(row);
+    });
+  });
+}
+function toggleSection(id){
+  document.getElementById('sec-'+id).classList.toggle('open');
+}
+function setAnswer(key, val, btnEl){
+  const cur = state.items[key];
+  cur.answer = (cur.answer === val) ? null : val;
+  const row = document.getElementById('item-'+key);
+  row.querySelector('.yn-btn.yes').classList.toggle('on', cur.answer==='yes');
+  row.querySelector('.yn-btn.no').classList.toggle('on', cur.answer==='no');
+  const majorRow = document.getElementById('major-'+key);
+  const noteRow = document.getElementById('note-'+key);
+  if(cur.answer === 'no'){ majorRow.classList.add('show'); }
+  else { majorRow.classList.remove('show'); cur.major=false; majorRow.querySelector('input').checked=false; }
+  if(cur.answer){ noteRow.classList.add('show'); }
+  else { noteRow.classList.remove('show'); cur.note=''; noteRow.querySelector('textarea').value=''; }
+  updateScore(); saveDraft();
+}
+function setItemNote(key, val){ state.items[key].note = val; saveDraft(); }
+function setMajor(key, checked){ state.items[key].major = checked; updateScore(); saveDraft(); }
+function toggleTag(key, tag, el){
+  const cur = state.items[key];
+  const i = cur.tags.indexOf(tag);
+  if(i>-1) cur.tags.splice(i,1); else cur.tags.push(tag);
+  el.classList.toggle('on');
+  saveDraft();
+}
+function setAuditType(el){
+  document.querySelectorAll('#f-audittype button').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  state.auditType = el.dataset.v;
+  saveDraft();
+}
+
+/* ============ SCORE / GAUGE ============ */
+function computeScore(){
+  let deduction = 0, answered = 0, hasMajor=false;
+  Object.values(state.items).forEach(it=>{
+    if(it.answer) answered++;
+  });
+  SECTIONS.forEach(sec=> sec.items.forEach(it=>{
+    const s = state.items[`${sec.id}-${it.n}`];
+    if(s.answer==='no'){ deduction += it.pts; if(s.major) hasMajor = true; }
+  }));
+  const score = Math.max(0, 100 - deduction);
+  return {score, deduction, answered, total: totalItemCount(), hasMajor};
+}
+function drawCup(pct, color){
+  const wrap = document.getElementById('cupwrap');
+  const fillY = 58 - Math.round(52*pct/100);
+  wrap.innerHTML = `
+  <svg viewBox="0 0 46 58" width="46" height="58">
+    <defs>
+      <clipPath id="cupclip"><path d="M6 6 L40 6 L35 54 Q23 58 11 54 Z"/></clipPath>
+    </defs>
+    <path d="M6 6 L40 6 L35 54 Q23 58 11 54 Z" fill="#fff" stroke="var(--line)" stroke-width="1.5"/>
+    <g clip-path="url(#cupclip)">
+      <rect x="0" y="${fillY}" width="46" height="58" fill="${color}" opacity="0.85"/>
+      <path d="M0 ${fillY} Q 11.5 ${fillY-4} 23 ${fillY} T 46 ${fillY}" fill="none" stroke="${color}" stroke-width="2.4" opacity="0.9"/>
+    </g>
+    <path d="M6 6 L40 6 L35 54 Q23 58 11 54 Z" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+    <ellipse cx="23" cy="6" rx="17" ry="3" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+    <line x1="26" y1="1" x2="30" y2="-9" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+  </svg>`;
+}
+function updateScore(){
+  const {score, answered, total, hasMajor} = computeScore();
+  document.getElementById('gauge-score').textContent = score;
+  document.getElementById('gauge-progress').textContent = `已填 ${answered} / ${total} 項`;
+  let color, badgeHtml;
+  if(hasMajor){
+    color = '#A23B2E';
+    badgeHtml = `<span class="badge fail">重大缺失・需立即停業</span>`;
+  } else if(score>=80){
+    color = '#073C4E';
+    badgeHtml = `<span class="badge pass">80分以上・免扣分</span>`;
+  } else if(score>=60){
+    color = '#B0813A';
+    badgeHtml = `<span class="badge warn">80分以下・限期改善並扣分</span>`;
+  } else {
+    color = '#A23B2E';
+    badgeHtml = `<span class="badge fail">評分偏低・需立即改善</span>`;
+  }
+  document.getElementById('gauge-badge-wrap').innerHTML = badgeHtml;
+  drawCup(score, color);
+}
+
+/* ============ TEA FLAVOR TESTS ============ */
+function renderTeas(){
+  const root = document.getElementById('tea-list');
+  root.innerHTML = '';
+  state.teas.forEach(t=>{
+    const card = document.createElement('div');
+    card.className = 'tea-card';
+    card.innerHTML = `
+      <div class="tea-card-head">
+        <input type="text" value="${escapeAttr(t.name)}" placeholder="試飲品項名稱" oninput="updateTea('${t.id}','name',this.value)">
+        <button class="tea-remove" onclick="removeTea('${t.id}')">移除 ✕</button>
+      </div>
+      <div class="tea-row">
+        <div class="field"><label class="mini-label">冰量</label><select onchange="updateTea('${t.id}','ice',this.value)">${selectOptionsHTML(ICE_OPTS, t.ice, '請選擇冰量')}</select></div>
+        <div class="field"><label class="mini-label">糖量</label><select onchange="updateTea('${t.id}','sugar',this.value)">${selectOptionsHTML(SUGAR_OPTS, t.sugar, '請選擇糖量')}</select></div>
+      </div>
+      <label class="mini-label">外觀</label>
+      <div class="chip-row" style="margin-bottom:9px;">
+        ${APPEAR_OPTS.map(o=>`<button type="button" class="chip ${t.appearance===o?'on':''}" onclick="setTeaField('${t.id}','appearance','${o}')">${o}</button>`).join('')}
+      </div>
+      <label class="mini-label">香氣強度</label>
+      <div class="aroma-row" style="margin-bottom:9px;">
+        ${[1,2,3,4,5].map(n=>`<div class="aroma-dot ${t.aroma===n?'on':''}" onclick="setTeaField('${t.id}','aroma',${n})">${n}</div>`).join('')}
+      </div>
+      <label class="mini-label">口感</label>
+      <div class="chip-row" style="margin-bottom:9px;">
+        ${TASTE_OPTS.map(o=>`<button type="button" class="chip ${t.taste.includes(o)?'on':''}" onclick="toggleTeaTaste('${t.id}','${o}')">${o}</button>`).join('')}
+      </div>
+      <label class="mini-label">風味是否正常</label>
+      <div class="chip-row">
+        <button type="button" class="chip ${t.normal==='yes'?'on':''}" onclick="setTeaField('${t.id}','normal','yes')">是</button>
+        <button type="button" class="chip ${t.normal==='no'?'on':''}" onclick="setTeaField('${t.id}','normal','no')">否</button>
+      </div>
+      ${t.normal==='no' ? `<textarea style="width:100%; min-height:56px; margin-top:8px; border:1px solid var(--line); border-radius:8px; background:#fff; padding:8px 10px; font-family:inherit; font-size:12.5px; color:var(--ink); resize:vertical;" placeholder="請說明異常原因…" oninput="updateTea('${t.id}','note',this.value)">${escapeAttr(t.note)}</textarea>` : ''}
+    `;
+    root.appendChild(card);
+  });
+}
+function updateTea(id, field, val){
+  const t = state.teas.find(x=>x.id===id); if(!t) return;
+  t[field] = val; saveDraft();
+}
+function setTeaField(id, field, val){
+  const t = state.teas.find(x=>x.id===id); if(!t) return;
+  t[field] = (t[field]===val) ? (field==='aroma'?0:null) : val;
+  renderTeas(); saveDraft();
+}
+function toggleTeaTaste(id, tasteVal){
+  const t = state.teas.find(x=>x.id===id); if(!t) return;
+  const i = t.taste.indexOf(tasteVal);
+  if(i>-1) t.taste.splice(i,1); else t.taste.push(tasteVal);
+  renderTeas(); saveDraft();
+}
+function addTeaTest(){ state.teas.push(newTea('')); renderTeas(); saveDraft(); }
+function removeTea(id){ state.teas = state.teas.filter(t=>t.id!==id); renderTeas(); saveDraft(); }
+function escapeAttr(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function selectOptionsHTML(opts, selected, placeholder){
+  let html = `<option value="">${placeholder||'請選擇'}</option>`;
+  opts.forEach(o=>{
+    html += `<option value="${o}" ${selected===o?'selected':''}>${o}</option>`;
+  });
+  return html;
+}
+
+/* ============ SIGNATURE PADS ============ */
+const sigPads = {};
+function setupSig(name){
+  const canvas = document.getElementById('sig-'+name);
+  const ctx = canvas.getContext('2d');
+  function resize(){
+    const rect = canvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = rect.width*ratio; canvas.height = rect.height*ratio;
+    ctx.scale(ratio, ratio);
+    ctx.lineWidth = 2.2; ctx.lineCap='round'; ctx.strokeStyle = '#2B2118';
+  }
+  resize();
+  let drawing=false, last=null;
+  function pos(e){
+    const rect = canvas.getBoundingClientRect();
+    const p = e.touches ? e.touches[0] : e;
+    return {x:p.clientX-rect.left, y:p.clientY-rect.top};
+  }
+  function start(e){ drawing=true; last=pos(e); document.getElementById('sig-hint-'+name).style.display='none'; e.preventDefault(); }
+  function move(e){ if(!drawing) return; const p=pos(e); ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p; e.preventDefault(); }
+  function end(){ if(drawing){ drawing=false; state['sig'+cap(name)] = canvas.toDataURL(); saveDraft(); } }
+  canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
+  canvas.addEventListener('touchstart', start, {passive:false}); canvas.addEventListener('touchmove', move, {passive:false}); canvas.addEventListener('touchend', end);
+  sigPads[name] = {canvas, ctx, resize};
+}
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function clearSig(name){
+  const {canvas, ctx} = sigPads[name];
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  document.getElementById('sig-hint-'+name).style.display='block';
+  state['sig'+cap(name)] = null; saveDraft();
+}
+
+/* ============ DRAFT AUTOSAVE ============ */
+let saveTimer=null;
+function saveDraft(){
+  syncBasicFields();
+  document.getElementById('save-status').textContent = '儲存中…';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    try{
+      await window.storage.set('draft-current', JSON.stringify(state), false);
+      document.getElementById('save-status').textContent = '草稿已自動儲存 ' + new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+    }catch(e){ document.getElementById('save-status').textContent = '自動儲存失敗'; }
+  }, 500);
+  updateScore();
+}
+function syncBasicFields(){
+  state.store = document.getElementById('f-store').value;
+  state.date = document.getElementById('f-date').value;
+  state.auditor = document.getElementById('f-auditor').value;
+  state.supervisor = document.getElementById('f-supervisor').value;
+  state.feedback = document.getElementById('f-feedback').value;
+  state.notes = document.getElementById('f-notes').value;
+  state.checklist.nozzle = document.getElementById('chk-nozzle').checked;
+  state.checklist.enzyme = document.getElementById('chk-enzyme').checked;
+  state.checklist.log = document.getElementById('chk-log').checked;
+}
+async function loadDraft(){
+  try{
+    const res = await window.storage.get('draft-current', false);
+    if(res && res.value){
+      const d = JSON.parse(res.value);
+      Object.assign(state, d);
+    }
+  }catch(e){ /* no draft yet */ }
+}
+
+/* ============ SUBMIT ============ */
+function findFirstUnanswered(){
+  for(const sec of SECTIONS){
+    for(const it of sec.items){
+      const key = `${sec.id}-${it.n}`;
+      const s = state.items[key];
+      if(!s || !s.answer) return {sectionId: sec.id, key};
+    }
+  }
+  return null;
+}
+let formStep = 1;
+function proceedToReview(){
+  syncBasicFields();
+  if(!state.store){ alert('請先填寫門市名稱後再送出。'); document.getElementById('f-store').focus(); return; }
+  const missing = findFirstUnanswered();
+  if(missing){
+    alert('請確認所有內容填寫完成送出!!!');
+    const secEl = document.getElementById('sec-'+missing.sectionId);
+    if(secEl) secEl.classList.add('open');
+    const itemEl = document.getElementById('item-'+missing.key);
+    if(itemEl) itemEl.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  renderReviewModal();
+  document.getElementById('review-modal-mask').classList.add('show');
+}
+function closeReviewModal(){
+  document.getElementById('review-modal-mask').classList.remove('show');
+}
+function renderReviewModal(){
+  const {score, deduction} = computeScore();
+  let html = `
+    <div class="mini-sec">
+      <h4>基本資料</h4>
+      <div class="mini-item"><div class="txt">門市</div><div style="font-weight:700;">${escapeAttr(state.store)}</div></div>
+      <div class="mini-item"><div class="txt">稽核類型</div><div>${state.auditType}</div></div>
+      <div class="mini-item"><div class="txt">稽核日期</div><div>${state.date||'—'}</div></div>
+      <div class="mini-item"><div class="txt">稽核人員</div><div>${escapeAttr(state.auditor||'—')}</div></div>
+      <div class="mini-item"><div class="txt">值班主管</div><div>${escapeAttr(state.supervisor||'—')}</div></div>
+      <div class="mini-item"><div class="txt">預估總分</div><div style="font-weight:800;">${score} / 100（扣 ${deduction} 分）</div></div>
+    </div>
+  `;
+  SECTIONS.forEach(sec=>{
+    html += `<div class="mini-sec"><h4>${sec.title}</h4>`;
+    sec.items.forEach(it=>{
+      const s = state.items[`${sec.id}-${it.n}`] || {};
+      const tagCls = s.answer==='yes'?'yes':(s.answer==='no'?'no':'blank');
+      const tagTxt = s.answer==='yes'?'是':(s.answer==='no'?'否'+(s.major?'・重大':''):'未填');
+      html += `<div class="mini-item"><div class="txt">${it.n}. ${it.text}</div><div class="mini-tag ${tagCls}">${tagTxt}</div></div>`;
+      if(s.note){
+        html += `<div style="font-size:12px; color:var(--ink-faint); margin:-4px 0 6px 4px; padding-left:8px; border-left:2px solid var(--line);">說明：${escapeAttr(s.note)}</div>`;
+      }
+    });
+    html += `</div>`;
+  });
+  if(state.teas && state.teas.length){
+    html += `<div class="mini-sec"><h4>茶品風味測試</h4>`;
+    state.teas.forEach(t=>{
+      if(!t.name && !t.normal) return;
+      html += `<div class="mini-item"><div class="txt">${escapeAttr(t.name)||'（未命名）'}　外觀:${t.appearance||'—'}　香氣:${t.aroma||'—'}　口感:${(t.taste||[]).join('、')||'—'}</div><div class="mini-tag ${t.normal==='yes'?'yes':(t.normal==='no'?'no':'blank')}">${t.normal==='yes'?'正常':(t.normal==='no'?'異常':'未填')}</div></div>`;
+      if(t.normal==='no' && t.note){
+        html += `<div style="font-size:12px; color:var(--ink-faint); margin:-4px 0 6px 4px; padding-left:8px; border-left:2px solid var(--line);">異常原因：${escapeAttr(t.note)}</div>`;
+      }
+    });
+    html += `</div>`;
+  }
+  html += `<div class="mini-sec"><h4>品管檢核</h4>
+    <div class="mini-item"><div class="txt">茶嘴定期清潔</div><div class="mini-tag ${state.checklist.nozzle?'yes':'blank'}">${state.checklist.nozzle?'已完成':'未勾選'}</div></div>
+    <div class="mini-item"><div class="txt">茶桶定期泡酵素</div><div class="mini-tag ${state.checklist.enzyme?'yes':'blank'}">${state.checklist.enzyme?'已完成':'未勾選'}</div></div>
+    <div class="mini-item"><div class="txt">工作日誌填寫完整</div><div class="mini-tag ${state.checklist.log?'yes':'blank'}">${state.checklist.log?'已完成':'未勾選'}</div></div>
+  </div>`;
+  if(state.feedback){ html += `<div class="mini-sec"><h4>門市反饋</h4><div style="font-size:13px;color:var(--ink-soft);">${escapeAttr(state.feedback)}</div></div>`; }
+  if(state.notes){ html += `<div class="mini-sec"><h4>備註</h4><div style="font-size:13px;color:var(--ink-soft);">${escapeAttr(state.notes)}</div></div>`; }
+  document.getElementById('review-modal-body').innerHTML = html;
+}
+function confirmReviewGoSign(){
+  closeReviewModal();
+  formStep = 2;
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = '確認簽名並送出';
+  btn.onclick = finalizeSubmit;
+  const hint = document.getElementById('signature-hint');
+  if(hint) hint.innerHTML = '<b style="color:var(--green-deep);">內容已確認無誤，</b>請稽核人員與值班主管於下方完成簽名後按下「確認簽名並送出」。';
+  const sigCard = document.getElementById('signature-card');
+  if(sigCard) sigCard.scrollIntoView({behavior:'smooth', block:'center'});
+}
+async function finalizeSubmit(){
+  if(!state.sigAuditor || !state.sigSupervisor){
+    alert('請完成稽核人員與值班主管簽名後再送出!!!');
+    const sigCard = document.getElementById('signature-card');
+    if(sigCard) sigCard.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  const {score, deduction, hasMajor} = computeScore();
+  const record = JSON.parse(JSON.stringify(state));
+  record.score = score; record.deduction = deduction; record.hasMajor = hasMajor;
+  record.submittedAt = new Date().toISOString();
+  const key = `audit:${record.store}_${record.submittedAt}`;
+  try{
+    await window.storage.set(key, JSON.stringify(record), true);
+    await window.storage.delete('draft-current', false).catch(()=>{});
+    document.getElementById('save-status').textContent = '已送出（評分 '+score+' 分）';
+    alert('稽核紀錄已送出！評分：'+score+' 分（扣分 '+deduction+' 分）'+(hasMajor?'\n⚠️ 本次稽核含重大缺失項目，請依規定立即處理。':''));
+    resetForm();
+    switchTab('history');
+  }catch(e){
+    alert('送出失敗，請檢查網路連線後再試一次。');
+  }
+}
+function resetForm(){
+  state = {store:'', date:new Date().toISOString().slice(0,10), auditType:'首次稽核', auditor:'', supervisor:'',
+    items:{}, teas:[], checklist:{nozzle:false,enzyme:false,log:false}, feedback:'', notes:'', sigAuditor:null, sigSupervisor:null};
+  initState();
+  document.getElementById('f-store').value=''; document.getElementById('f-date').value=state.date;
+  document.getElementById('f-auditor').value=''; document.getElementById('f-supervisor').value='';
+  document.getElementById('f-feedback').value=''; document.getElementById('f-notes').value='';
+  document.getElementById('chk-nozzle').checked=false; document.getElementById('chk-enzyme').checked=false; document.getElementById('chk-log').checked=false;
+  document.querySelectorAll('#f-audittype button').forEach(b=>b.classList.remove('on'));
+  document.querySelector('#f-audittype button[data-v="首次稽核"]').classList.add('on');
+  renderSections(); renderTeas();
+  Object.keys(sigPads).forEach(clearSig);
+  updateScore();
+  formStep = 1;
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = '完成';
+  btn.onclick = proceedToReview;
+  const hint = document.getElementById('signature-hint');
+  if(hint) hint.textContent = '本次稽核內容屬實無誤，已確認後簽名。';
+}
+
+/* ============ STORE DIRECTORY / DROPDOWN ============ */
+const REGION_ORDER = ['台中市','彰化縣','南投縣','雲林縣','嘉義市','嘉義縣','台南市','高雄市','屏東縣','離島','商場特規'];
+const DIRECT_STORES = new Set(['台中精誠店','台中向上店','第二市場店','重慶青海店','一中太平店','高雄熱河店','新烏日台鐵店']);
+const OWNER_ORDER = ['直營店','加盟店'];
+function regionInitial(region){ return region==='商場特規' ? '特' : region.charAt(0); }
+let deletedStores = new Set();
+async function loadDeletedStores(){
+  try{
+    const res = await window.storage.get('deleted-stores', true);
+    deletedStores = new Set(res && res.value ? JSON.parse(res.value) : []);
+  }catch(e){ deletedStores = new Set(); }
+}
+async function saveDeletedStores(){
+  try{ await window.storage.set('deleted-stores', JSON.stringify(Array.from(deletedStores)), true); }catch(e){}
+}
+function activeStoreRegions(){
+  const out = {};
+  REGION_ORDER.forEach(region=>{
+    out[region] = (STORE_REGIONS[region]||[]).filter(n=>!deletedStores.has(n));
+  });
+  return out;
+}
+function activeGroupedRegions(){
+  const active = activeStoreRegions();
+  const groups = { '直營店':{}, '加盟店':{} };
+  REGION_ORDER.forEach(region=>{
+    const names = active[region];
+    const direct = names.filter(n=>DIRECT_STORES.has(n));
+    const franchise = names.filter(n=>!DIRECT_STORES.has(n));
+    if(direct.length) groups['直營店'][region] = direct;
+    if(franchise.length) groups['加盟店'][region] = franchise;
+  });
+  return groups;
+}
+async function deleteStore(storeName){
+  if(!confirm(`確定要刪除「${storeName}」嗎？\n刪除後將從稽核作業選單、稽核總表與稽核紀錄中移除，並同步給所有使用者，此動作無法還原。`)) return;
+  deletedStores.add(storeName);
+  await saveDeletedStores();
+  if(schedule[storeName]){ delete schedule[storeName]; saveSchedule(); }
+  document.getElementById('f-store').innerHTML = storeOptionsHTML();
+  if(document.getElementById('view-schedule').style.display !== 'none'){ renderScheduleTable(); renderCalendar(); }
+  if(document.getElementById('view-history').style.display !== 'none'){ renderHistory(); }
+}
+function allStoresFlat(){
+  const active = activeStoreRegions();
+  return REGION_ORDER.flatMap(r=>active[r]);
+}
+function storeOptionsHTML(){
+  const groups = activeGroupedRegions();
+  let html = '<option value="">請選擇門市</option>';
+  OWNER_ORDER.forEach(owner=>{
+    REGION_ORDER.forEach(region=>{
+      const names = groups[owner][region];
+      if(!names || names.length===0) return;
+      html += `<optgroup label="${owner}・${region}">`;
+      names.forEach(name=>{
+        html += `<option value="${name}">${name}</option>`;
+      });
+      html += '</optgroup>';
+    });
+  });
+  return html;
+}
+function toggleAcc(id){ document.getElementById(id).classList.toggle('open'); }
+
+/* ============ FLOW PROCESS (稽核流程) ============ */
+const FLOW_DEFAULTS = {
+  n1: '初次稽核',
+  n2: '滿分通過',
+  n3: '缺失限期改善\n(5個工作天)',
+  n4: '結案',
+  n5: '覆核\n(通知業主/幹部現場會同輔導)',
+  n6: '缺失限期改善\n(5個工作天)',
+  n7: '結案',
+  n8: '第三方稽核單位介入\n(相關費用由業主負擔)',
+  lbl1: '通過',
+  lbl2: '未通過',
+  lbl3: '通過',
+  lbl4: '未通過',
+};
+let flowTexts = {};
+let flowSaveTimer = null;
+function applyFlowTexts(){
+  document.querySelectorAll('[data-flow]').forEach(el=>{
+    const key = el.dataset.flow;
+    el.textContent = (flowTexts[key] !== undefined) ? flowTexts[key] : FLOW_DEFAULTS[key];
+  });
+}
+async function loadAndRenderFlow(){
+  try{
+    const res = await window.storage.get('flow-process', true);
+    flowTexts = (res && res.value) ? JSON.parse(res.value) : {};
+  }catch(e){ flowTexts = {}; }
+  applyFlowTexts();
+}
+function saveFlowTexts(){
+  const statusEl = document.getElementById('sched-save-status');
+  if(statusEl) statusEl.textContent = '儲存中…';
+  clearTimeout(flowSaveTimer);
+  flowSaveTimer = setTimeout(async ()=>{
+    try{
+      await window.storage.set('flow-process', JSON.stringify(flowTexts), true);
+      if(statusEl) statusEl.textContent = '已同步 ' + new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+    }catch(e){ if(statusEl) statusEl.textContent = '同步失敗，請檢查網路'; }
+  }, 500);
+}
+function resetFlowDefaults(){
+  flowTexts = {};
+  applyFlowTexts();
+  saveFlowTexts();
+}
+function setupFlowEditing(){
+  document.querySelectorAll('[data-flow]').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      flowTexts[el.dataset.flow] = el.textContent;
+      saveFlowTexts();
+    });
+  });
+}
+
+/* ============ SCHEDULE OVERVIEW (per-store table) ============ */
+let schedule = {}; // storeName -> {time, auditor, transport}
+let calMonth = new Date(); calMonth.setDate(1); calMonth.setHours(0,0,0,0);
+let calSelectedDate = null;
+async function loadSchedule(){
+  try{
+    const res = await window.storage.get('schedule-map', true);
+    schedule = (res && res.value) ? JSON.parse(res.value) : {};
+  }catch(e){ schedule = {}; }
+}
+async function refreshSchedule(){
+  const root = document.getElementById('sched-regions');
+  root.innerHTML = '<div class="empty">載入中…</div>';
+  await loadDeletedStores();
+  const totalEl = document.getElementById('sched-total');
+  if(totalEl) totalEl.textContent = allStoresFlat().length;
+  await loadAndRenderFlow();
+  await loadSchedule();
+  renderScheduleTable();
+  renderCalendar();
+}
+function updateSchedField(store, field, val){
+  if(!schedule[store]) schedule[store] = {time:'', auditor:'', transport:'', type:'', notified:false};
+  schedule[store][field] = val;
+  saveSchedule();
+  renderCalendar();
+}
+function renderScheduleTable(){
+  const root = document.getElementById('sched-regions');
+  const q = (document.getElementById('sched-search').value||'').trim();
+  root.innerHTML = '';
+  let anyGroup = false;
+  const groups = activeGroupedRegions();
+  OWNER_ORDER.forEach((owner, gi)=>{
+    const regionEntries = REGION_ORDER.map((region, ri)=>{
+      let names = groups[owner][region] || [];
+      if(q) names = names.filter(n=>n.includes(q));
+      return {region, ri, names};
+    }).filter(r=>r.names.length>0);
+    if(regionEntries.length===0) return;
+    anyGroup = true;
+    const totalNames = regionEntries.reduce((a,r)=>a+r.names.length,0);
+    const totalAssigned = regionEntries.reduce((a,r)=>a+r.names.filter(n=>{ const e=schedule[n]; return e && (e.time||e.auditor||e.transport); }).length,0);
+    const groupSec = document.createElement('div');
+    groupSec.className = 'section owner-group' + (q ? ' open' : '');
+    groupSec.id = 'sched-owner-'+gi;
+    let innerHtml = '';
+    regionEntries.forEach(({region, ri, names})=>{
+      const assigned = names.filter(n=>{ const e = schedule[n]; return e && (e.time || e.auditor || e.transport); }).length;
+      const secId = `sched-region-${gi}-${ri}`;
+      let rows = '';
+      names.forEach(name=>{
+        const e = schedule[name] || {time:'',auditor:'',transport:'',type:'',notified:false};
+        rows += `<tr>
+          <td>${name} <button type="button" class="store-del-btn" title="刪除門市" onclick="deleteStore('${escapeAttr(name)}')">✕</button></td>
+          <td><input type="datetime-local" value="${e.time||''}" onchange="updateSchedField('${escapeAttr(name)}','time',this.value)"></td>
+          <td><input type="text" placeholder="姓名" value="${escapeAttr(e.auditor)}" oninput="updateSchedField('${escapeAttr(name)}','auditor',this.value)"></td>
+          <td><input type="text" placeholder="如：公務車、租車" value="${escapeAttr(e.transport)}" oninput="updateSchedField('${escapeAttr(name)}','transport',this.value)"></td>
+          <td><select onchange="updateSchedField('${escapeAttr(name)}','type',this.value)">${selectOptionsHTML(SCHED_TYPE_OPTS, e.type, '請選擇類型')}</select></td>
+          <td style="text-align:center;"><input type="checkbox" ${e.notified?'checked':''} title="已通知業主" onchange="updateSchedField('${escapeAttr(name)}','notified',this.checked)"></td>
+        </tr>`;
+      });
+      innerHtml += `
+      <div class="section sub-section${q?' open':''}" id="${secId}">
+        <div class="section-head" onclick="toggleAcc('${secId}')">
+          <div class="num">${regionInitial(region)}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="section-title">${region}</div>
+            <div class="section-sub">已安排 ${assigned} / ${names.length} 間</div>
+          </div>
+          <div class="chev">▾</div>
+        </div>
+        <div class="section-body">
+          <div class="sched-table-wrap">
+            <table class="sched-table">
+              <thead><tr><th>門市</th><th>稽核時間</th><th>稽核人員</th><th>交通安排</th><th>稽核類型</th><th>已通知業主</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+    });
+    groupSec.innerHTML = `
+      <div class="section-head owner-head" onclick="toggleAcc('sched-owner-${gi}')">
+        <div class="num owner-num">${owner==='直營店'?'直':'加'}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="section-title">${owner}</div>
+          <div class="section-sub">已安排 ${totalAssigned} / ${totalNames} 間</div>
+        </div>
+        <div class="chev">▾</div>
+      </div>
+      <div class="section-body">${innerHtml}</div>
+    `;
+    root.appendChild(groupSec);
+  });
+  if(!anyGroup){ root.innerHTML = '<div class="empty">找不到符合的門市</div>'; }
+}
+let schedSaveTimer = null;
+function saveSchedule(){
+  const statusEl = document.getElementById('sched-save-status');
+  if(statusEl) statusEl.textContent = '儲存中…';
+  clearTimeout(schedSaveTimer);
+  schedSaveTimer = setTimeout(async ()=>{
+    try{
+      await window.storage.set('schedule-map', JSON.stringify(schedule), true);
+      if(statusEl) statusEl.textContent = '已同步 ' + new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+    }catch(e){ if(statusEl) statusEl.textContent = '同步失敗，請檢查網路'; }
+  }, 500);
+}
+
+/* ---------- schedule calendar overview ---------- */
+function getScheduleEntries(){
+  const list = [];
+  Object.keys(schedule).forEach(store=>{
+    const e = schedule[store];
+    if(e && e.time){
+      list.push({store, time:e.time, auditor:e.auditor||'', transport:e.transport||'', type:e.type||''});
+    }
+  });
+  list.sort((a,b)=> a.time.localeCompare(b.time));
+  return list;
+}
+function shiftCalMonth(delta){
+  calMonth.setMonth(calMonth.getMonth()+delta);
+  calSelectedDate = null;
+  renderCalendar();
+}
+function selectCalDate(dateKey){
+  calSelectedDate = (calSelectedDate===dateKey) ? null : dateKey;
+  renderCalendar();
+}
+function renderCalendar(){
+  const gridEl = document.getElementById('cal-grid');
+  const labelEl = document.getElementById('cal-month-label');
+  if(!gridEl) return;
+  const entries = getScheduleEntries();
+  const y = calMonth.getFullYear(), m = calMonth.getMonth();
+  const startWeekday = new Date(y,m,1).getDay();
+  const daysInMonth = new Date(y,m+1,0).getDate();
+  const byDate = {};
+  entries.forEach(e=>{
+    const key = e.time.slice(0,10);
+    (byDate[key] = byDate[key] || []).push(e);
+  });
+  const todayKey = new Date().toISOString().slice(0,10);
+  let cells = '';
+  for(let i=0;i<startWeekday;i++) cells += `<div class="cal-cell empty"></div>`;
+  for(let d=1; d<=daysInMonth; d++){
+    const key = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayEntries = byDate[key] || [];
+    const cls = ['cal-cell'];
+    if(dayEntries.length) cls.push('has-entries');
+    if(key===todayKey) cls.push('today');
+    if(key===calSelectedDate) cls.push('selected');
+    cells += `<div class="${cls.join(' ')}" onclick="selectCalDate('${key}')">
+      <div class="cal-daynum">${d}</div>
+      ${dayEntries.length ? `<div class="cal-names">${dayEntries.slice(0,3).map(e=>`<div class="cal-name-line" title="${escapeAttr(e.store)}">${e.store}</div>`).join('')}${dayEntries.length>3?`<div class="cal-name-more">+${dayEntries.length-3}</div>`:''}</div>` : ''}
+    </div>`;
+  }
+  gridEl.innerHTML = `
+    <div class="cal-weekdays">${['日','一','二','三','四','五','六'].map(w=>`<div>${w}</div>`).join('')}</div>
+    <div class="cal-days">${cells}</div>
+  `;
+  labelEl.textContent = `${y} 年 ${m+1} 月`;
+  renderCalAgenda(entries, byDate);
+}
+function renderCalAgenda(entries, byDate){
+  const root = document.getElementById('cal-agenda');
+  if(!root) return;
+  let list, title;
+  if(calSelectedDate){
+    list = (byDate[calSelectedDate]||[]).slice().sort((a,b)=>a.time.localeCompare(b.time));
+    const d = new Date(calSelectedDate+'T00:00:00');
+    title = d.toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'short'}) + '　排程';
+  } else {
+    const y = calMonth.getFullYear(), m = calMonth.getMonth();
+    const prefix = `${y}-${String(m+1).padStart(2,'0')}`;
+    list = entries.filter(e=>e.time.startsWith(prefix));
+    title = '本月所有排程・依時間先後排列';
+  }
+  if(list.length===0){
+    root.innerHTML = `<div class="cal-agenda-title">${title}</div><div class="empty" style="padding:20px 8px;">${calSelectedDate?'這天尚無排程':'本月尚無排程，請於下方總表填入稽核時間'}</div>`;
+    return;
+  }
+  root.innerHTML = `<div class="cal-agenda-title">${title}</div>` + list.map(e=>{
+    const t = new Date(e.time);
+    const timeStr = t.toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+    return `<div class="cal-agenda-item">
+      <div class="cal-agenda-time">${timeStr}</div>
+      <div>
+        <div class="cal-agenda-store">${e.store}${e.type?` <span class="stat-badge done">${escapeAttr(e.type)}</span>`:''}</div>
+        <div class="cal-agenda-meta">${e.auditor?('稽核：'+escapeAttr(e.auditor)):'尚未指派稽核人員'}${e.transport?('　交通：'+escapeAttr(e.transport)):''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ============ ANALYTICS (稽核數據) ============ */
+let analyticsAllRecords = [];
+function scoreColor(score){
+  return score>=80 ? '#073C4E' : (score>=60 ? '#B0813A' : '#A23B2E');
+}
+function renderHBar(label, valueText, pct, color){
+  const clamped = Math.max(0, Math.min(100, pct));
+  return `<div class="hbar-row">
+    <div class="hbar-label-row"><span>${label}</span><b style="color:${color};">${valueText}</b></div>
+    <div class="hbar-track"><div class="hbar-fill" style="width:${clamped}%; background:${color};"></div></div>
+  </div>`;
+}
+function monthChartHTML(monthsRange, valuesByMonth, type){
+  const vals = monthsRange.map(m=> valuesByMonth[m]);
+  const maxCount = Math.max(1, ...vals.map(v=> v||0));
+  let cols = '';
+  monthsRange.forEach(m=>{
+    const v = valuesByMonth[m];
+    let heightPct, color, label;
+    if(type==='count'){
+      heightPct = v ? Math.max(6, Math.round(v/maxCount*100)) : 2;
+      color = '#073C4E';
+      label = v || '';
+    } else {
+      if(v===null || v===undefined){ heightPct=2; color='var(--line)'; label=''; }
+      else { heightPct = Math.max(6, v); color = scoreColor(v); label = v; }
+    }
+    cols += `<div class="month-col">
+      <div class="month-value">${label}</div>
+      <div class="month-bar" style="height:${heightPct}%; background:${color};"></div>
+      <div class="month-label">${m}月</div>
+    </div>`;
+  });
+  return `<div class="month-chart">${cols}</div>`;
+}
+function buildStoreRankingHTML(storeList, flat){
+  if(storeList.length===0) return '<div class="empty" style="padding:16px 4px;">尚無門市稽核資料</div>';
+  if(!flat && storeList.length > 5){
+    const top = storeList.slice(0,5);
+    const bottom = storeList.slice(-5).reverse();
+    return `<div class="an-sub">表現最佳</div>`
+      + top.map(s=> renderHBar(`${s.store}（${s.count}次）`, s.avg, s.avg, scoreColor(s.avg))).join('')
+      + `<div class="an-sub" style="margin-top:16px;">待加強</div>`
+      + bottom.map(s=> renderHBar(`${s.store}（${s.count}次）`, s.avg, s.avg, scoreColor(s.avg))).join('');
+  }
+  return storeList.map(s=> renderHBar(`${s.store}（${s.count}次）`, s.avg, s.avg, scoreColor(s.avg))).join('');
+}
+async function refreshAnalytics(){
+  const root = document.getElementById('an-content');
+  root.innerHTML = '<div class="empty">載入中…</div>';
+  try{
+    const idx = await window.storage.list('audit:', true);
+    const keys = (idx && idx.keys) ? idx.keys : [];
+    const records = [];
+    for(const k of keys){
+      try{ const r = await window.storage.get(k, true); if(r && r.value) records.push(JSON.parse(r.value)); }catch(e){}
+    }
+    analyticsAllRecords = records;
+    populateYearSelect(records);
+    renderAnalytics();
+  }catch(e){
+    root.innerHTML = '<div class="empty">讀取數據時發生問題，請稍後再試。</div>';
+  }
+}
+function populateYearSelect(records){
+  const years = new Set();
+  records.forEach(d=>{ const y=(d.date||d.submittedAt||'').slice(0,4); if(y) years.add(y); });
+  years.add(String(new Date().getFullYear()));
+  const sorted = Array.from(years).sort().reverse();
+  const sel = document.getElementById('an-year');
+  const prev = sel.value;
+  sel.innerHTML = sorted.map(y=>`<option value="${y}">${y} 年</option>`).join('');
+  sel.value = sorted.includes(prev) ? prev : sorted[0];
+}
+function renderAnalytics(){
+  const root = document.getElementById('an-content');
+  const yearSel = document.getElementById('an-year');
+  if(!yearSel || !yearSel.value){ root.innerHTML = '<div class="empty">載入中…</div>'; return; }
+  const year = yearSel.value;
+  const period = document.getElementById('an-period').value;
+  let monthsRange, periodLabel;
+  if(period==='h1'){ monthsRange = [1,2,3,4,5,6]; periodLabel = `${year} 年度・上半年度（1-6月）`; }
+  else if(period==='h2'){ monthsRange = [7,8,9,10,11,12]; periodLabel = `${year} 年度・下半年度（7-12月）`; }
+  else { monthsRange = [1,2,3,4,5,6,7,8,9,10,11,12]; periodLabel = `${year} 年度・整年度總覽`; }
+
+  const yearRecords = analyticsAllRecords.filter(d=> (d.date||d.submittedAt||'').slice(0,4) === year);
+  const records = yearRecords.filter(d=>{
+    const dateStr = d.date || (d.submittedAt||'').slice(0,10);
+    const mm = parseInt((dateStr||'').slice(5,7),10);
+    return monthsRange.includes(mm);
+  });
+  if(records.length===0){
+    root.innerHTML = `<div class="empty"><div class="icon">📊</div>${periodLabel}尚無稽核紀錄<br>完成稽核後這裡會自動產生數據圖表</div>`;
+    return;
+  }
+  const total = records.length;
+  const totalStoreCount = new Set(records.map(d=>(d.store||'').trim()).filter(Boolean)).size;
+  const avgScore = Math.round(records.reduce((a,d)=>a+(d.score||0),0)/total);
+  const passCount = records.filter(d=>d.score>=80).length;
+  const passRate = Math.round(passCount/total*100);
+  const majorCount = records.filter(d=>d.hasMajor).length;
+
+  const monthCount = {}, monthScoreSum = {}, monthScoreCnt = {};
+  monthsRange.forEach(m=>{ monthCount[m]=0; monthScoreSum[m]=0; monthScoreCnt[m]=0; });
+  records.forEach(d=>{
+    const dateStr = d.date || (d.submittedAt||'').slice(0,10);
+    const mm = parseInt((dateStr||'').slice(5,7),10);
+    if(monthsRange.includes(mm)){
+      monthCount[mm]++;
+      monthScoreSum[mm] += (d.score||0);
+      monthScoreCnt[mm]++;
+    }
+  });
+  const monthAvg = {};
+  monthsRange.forEach(m=> monthAvg[m] = monthScoreCnt[m] ? Math.round(monthScoreSum[m]/monthScoreCnt[m]) : null);
+
+  const AUDIT_TYPES = ['首次稽核','督導複核','食安協同複核'];
+  const types = {};
+  AUDIT_TYPES.forEach(t=> types[t] = {count:0, pass:0, stores:new Set()});
+  records.forEach(d=>{
+    const t = AUDIT_TYPES.includes(d.auditType) ? d.auditType : (d.auditType || '首次稽核');
+    if(!types[t]) types[t] = {count:0, pass:0, stores:new Set()};
+    types[t].count++;
+    if(d.score>=80) types[t].pass++;
+    if(d.store) types[t].stores.add(d.store.trim());
+  });
+  const typeOrder = AUDIT_TYPES.filter(t=>types[t].count>0).concat(Object.keys(types).filter(t=>!AUDIT_TYPES.includes(t) && types[t].count>0));
+  const typeHtml = typeOrder.map(t=>{
+    const rate = Math.round(types[t].pass/types[t].count*100);
+    return renderHBar(`${t}（${types[t].count} 次・${types[t].stores.size} 間門市）`, rate+'%', rate, scoreColor(rate));
+  }).join('');
+
+  const catStats = SECTIONS.map(sec=>{
+    const maxPts = sec.items.reduce((a,i)=>a+i.pts,0);
+    let sum = 0;
+    records.forEach(d=>{
+      sec.items.forEach(it=>{
+        const s = (d.items||{})[`${sec.id}-${it.n}`];
+        if(s && s.answer==='no') sum += it.pts;
+      });
+    });
+    const avgDed = sum / total;
+    const pct = maxPts ? Math.round(avgDed/maxPts*100) : 0;
+    return {title:sec.title, maxPts, avgDed, pct};
+  });
+  const catHtml = catStats.map(c=>{
+    const color = c.pct>30 ? '#A23B2E' : (c.pct>15 ? '#B0813A' : '#073C4E');
+    return renderHBar(c.title, `平均扣 ${c.avgDed.toFixed(1)} 分（上限 ${c.maxPts}）`, c.pct, color);
+  }).join('');
+
+  function buildStoreAgg(recs){
+    const agg = {};
+    recs.forEach(d=>{
+      const store = (d.store||'').trim(); if(!store) return;
+      if(!agg[store]) agg[store] = {sum:0, count:0};
+      agg[store].sum += (d.score||0); agg[store].count++;
+    });
+    const list = Object.keys(agg).map(s=>({store:s, avg: Math.round(agg[s].sum/agg[s].count), count:agg[s].count}));
+    list.sort((a,b)=> b.avg-a.avg);
+    return list;
+  }
+  const rankingByTypeHtml = AUDIT_TYPES.map(t=>{
+    const recsOfType = records.filter(d=> (AUDIT_TYPES.includes(d.auditType)?d.auditType:'首次稽核')===t);
+    const list = buildStoreAgg(recsOfType);
+    return `<div class="an-sub">${t}店家排名${list.length?`（共 ${list.length} 間）`:''}</div>` + buildStoreRankingHTML(list, true);
+  }).join('<div style="height:16px;"></div>');
+
+  const teaAgg = {};
+  records.forEach(d=>{
+    (d.teas||[]).forEach(t=>{
+      const name = (t.name||'').trim();
+      if(!name || !t.normal) return;
+      if(!teaAgg[name]) teaAgg[name] = {total:0, normal:0};
+      teaAgg[name].total++;
+      if(t.normal==='yes') teaAgg[name].normal++;
+    });
+  });
+  const teaList = Object.keys(teaAgg).map(name=>({name, total:teaAgg[name].total, normal:teaAgg[name].normal, pct: Math.round(teaAgg[name].normal/teaAgg[name].total*100)}));
+  teaList.sort((a,b)=> b.total-a.total);
+  const teaHtml = teaList.length
+    ? teaList.map(t=> renderHBar(`${t.name}（${t.total}次）`, t.pct+'%', t.pct, t.pct>=90?'#073C4E':(t.pct>=70?'#B0813A':'#A23B2E'))).join('')
+    : '<div class="empty" style="padding:16px 4px;">本期間尚無茶品風味測試紀錄</div>';
+
+  const monthChartCard = monthsRange.length > 1 ? `
+    <div class="card"><div class="card-pad">
+      <h3 class="serif an-title">${period==='full'?'月度':(period==='h1'?'上半年度':'下半年度')}稽核次數</h3>
+      ${monthChartHTML(monthsRange, monthCount,'count')}
+    </div></div>
+
+    <div class="card"><div class="card-pad">
+      <h3 class="serif an-title">${period==='full'?'月度':(period==='h1'?'上半年度':'下半年度')}平均分數</h3>
+      ${monthChartHTML(monthsRange, monthAvg,'score')}
+    </div></div>
+  ` : '';
+
+  root.innerHTML = `
+    <div style="font-size:12px; color:var(--ink-faint); margin:-4px 2px 12px;">${periodLabel}</div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-lbl">稽核總次數（${totalStoreCount} 間門市）</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:${scoreColor(avgScore)};">${avgScore}</div><div class="stat-lbl">平均分數</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:${scoreColor(passRate)};">${passRate}%</div><div class="stat-lbl">整體通過率（80分以上）</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:${majorCount?'#A23B2E':'var(--ink)'};">${majorCount}</div><div class="stat-lbl">重大缺失次數</div></div>
+    </div>
+
+    ${monthChartCard}
+
+    <div class="card"><div class="card-pad">
+      <h3 class="serif an-title">依稽核類型統計・次數與店家數</h3>
+      ${typeHtml}
+    </div></div>
+
+    <div class="card"><div class="card-pad">
+      <h3 class="serif an-title">三大類別平均扣分比例</h3>
+      ${catHtml}
+    </div></div>
+
+    <div class="card"><div class="card-pad">
+      <h3 class="serif an-title">門市平均分數排行（依稽核類型）</h3>
+      ${rankingByTypeHtml}
+    </div></div>
+
+    <div class="card"><div class="card-pad">
+      <h3 class="serif an-title">茶品風味測試・風味正常比例</h3>
+      ${teaHtml}
+    </div></div>
+  `;
+}
+
+/* ============ TABS ============ */
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.getElementById('view-form').style.display = tab==='form' ? 'block':'none';
+  document.getElementById('view-history').style.display = tab==='history' ? 'block':'none';
+  document.getElementById('view-schedule').style.display = tab==='schedule' ? 'block':'none';
+  document.getElementById('view-analytics').style.display = tab==='analytics' ? 'block':'none';
+  document.getElementById('footerbar').style.display = tab==='form' ? 'block':'none';
+  if(tab==='history') renderHistory();
+  if(tab==='schedule') refreshSchedule();
+  if(tab==='analytics') refreshAnalytics();
+}
+
+/* ============ HISTORY ============ */
+function renderCoverage(records){
+  const root = document.getElementById('hist-coverage');
+  if(!root) return;
+  const stats = {};
+  const latestByStore = {};
+  const latestKeyByStore = {};
+  records.forEach(r=>{
+    const d = r.data;
+    const store = (d.store||'').trim();
+    if(!store) return;
+    if(!stats[store]) stats[store] = {count:0, anyMajor:false, latestAt:''};
+    stats[store].count++;
+    if(d.hasMajor) stats[store].anyMajor = true;
+    if(!stats[store].latestAt || (d.submittedAt||'') > stats[store].latestAt){
+      stats[store].latestAt = d.submittedAt||'';
+      latestByStore[store] = d;
+      latestKeyByStore[store] = r.key;
+    }
+  });
+  const allStores = allStoresFlat();
+  const auditedCount = allStores.filter(s=>stats[s]).length;
+  const totalStores = allStores.length;
+  const pct = totalStores ? Math.round(auditedCount/totalStores*100) : 0;
+  const groups = activeGroupedRegions();
+
+  let groupsHtml = '';
+  OWNER_ORDER.forEach((owner, gi)=>{
+    const regionEntries = REGION_ORDER.map((region, ri)=>({region, ri, names: groups[owner][region]||[]})).filter(r=>r.names.length>0);
+    if(regionEntries.length===0) return;
+    const totalNames = regionEntries.reduce((a,r)=>a+r.names.length,0);
+    const totalDone = regionEntries.reduce((a,r)=>a+r.names.filter(n=>stats[n]).length,0);
+    let regionsHtml = '';
+    regionEntries.forEach(({region, ri, names})=>{
+      const doneInRegion = names.filter(n=>stats[n]).length;
+      let rows = '';
+      names.forEach(name=>{
+        const s = stats[name];
+        const delBtn = `<button type="button" class="store-del-btn" title="刪除門市" onclick="event.stopPropagation(); deleteStore('${escapeAttr(name)}')">✕</button>`;
+        if(s){
+          const d = latestByStore[name];
+          const scoreColor = s.anyMajor ? 'var(--red)' : (d.score>=80?'var(--green)':(d.score>=60?'var(--amber)':'var(--red)'));
+          rows += `<tr class="cov-row-done" data-store="${escapeAttr(name)}">
+            <td>${name} ${delBtn}</td>
+            <td><span class="stat-badge done">已稽核</span>${s.anyMajor?'<span class="stat-badge major">重大缺失</span>':''}</td>
+            <td style="font-weight:800;color:${scoreColor};">${d.score}</td>
+            <td>${s.count}</td>
+            <td>${d.date||'—'}</td>
+            <td>${escapeAttr(d.auditor||'—')}</td>
+          </tr>`;
+        } else {
+          rows += `<tr class="row-pending">
+            <td>${name} ${delBtn}</td>
+            <td><span class="stat-badge pending">未稽核</span></td>
+            <td>—</td><td>—</td><td>—</td><td>—</td>
+          </tr>`;
+        }
+      });
+      const secId = `cov-region-${gi}-${ri}`;
+      regionsHtml += `
+      <div class="section sub-section" id="${secId}">
+        <div class="section-head" onclick="toggleAcc('${secId}')">
+          <div class="num">${regionInitial(region)}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="section-title">${region}</div>
+            <div class="section-sub">已稽核 ${doneInRegion} / ${names.length} 間</div>
+          </div>
+          <div class="chev">▾</div>
+        </div>
+        <div class="section-body">
+          <div class="sched-table-wrap">
+            <table class="sched-table cov-table">
+              <thead><tr><th>門市</th><th>狀態</th><th>最新評分</th><th>稽核次數</th><th>最近稽核日期</th><th>稽核人員</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+    });
+    groupsHtml += `
+    <div class="section owner-group" id="cov-owner-${gi}">
+      <div class="section-head owner-head" onclick="toggleAcc('cov-owner-${gi}')">
+        <div class="num owner-num">${owner==='直營店'?'直':'加'}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="section-title">${owner}</div>
+          <div class="section-sub">已稽核 ${totalDone} / ${totalNames} 間</div>
+        </div>
+        <div class="chev">▾</div>
+      </div>
+      <div class="section-body">${regionsHtml}</div>
+    </div>`;
+  });
+
+  root.innerHTML = `
+    <div class="cov-summary">
+      <div class="cov-summary-row"><span>整體稽核完成度</span><b>${auditedCount} / ${totalStores}（${pct}%）</b></div>
+      <div class="cov-bar"><div class="cov-bar-fill" style="width:${pct}%;"></div></div>
+    </div>
+    ${groupsHtml}
+  `;
+  root.querySelectorAll('tr.cov-row-done').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      const d = latestByStore[tr.dataset.store];
+      if(d) showDetail(d, latestKeyByStore[tr.dataset.store]);
+    });
+  });
+}
+async function renderHistory(){
+  const listEl = document.getElementById('hist-list');
+  listEl.innerHTML = '<div class="empty">載入中…</div>';
+  await loadDeletedStores();
+  try{
+    const idx = await window.storage.list('audit:', true);
+    const keys = (idx && idx.keys) ? idx.keys : [];
+    if(keys.length===0){
+      renderCoverage([]);
+      listEl.innerHTML = '<div class="empty"><div class="icon">🧋</div>尚無稽核紀錄<br>完成第一筆稽核後會顯示在這裡</div>';
+      return;
+    }
+    const records = [];
+    for(const k of keys){
+      try{ const r = await window.storage.get(k, true); if(r && r.value) records.push({key:k, data:JSON.parse(r.value)}); }catch(e){}
+    }
+    records.sort((a,b)=> (b.data.submittedAt||'').localeCompare(a.data.submittedAt||''));
+    renderCoverage(records);
+    const q = (document.getElementById('hist-search').value||'').trim();
+    const filtered = q ? records.filter(r=> (r.data.store||'').includes(q)) : records;
+    if(filtered.length===0){ listEl.innerHTML = '<div class="empty">找不到符合的門市紀錄</div>'; return; }
+    listEl.innerHTML = '';
+    filtered.forEach(r=>{
+      const d = r.data;
+      const dt = d.submittedAt ? new Date(d.submittedAt) : null;
+      const dtStr = dt ? dt.toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+      const color = d.hasMajor ? 'var(--red)' : (d.score>=80 ? 'var(--green)' : (d.score>=60?'var(--amber)':'var(--red)'));
+      const card = document.createElement('div');
+      card.className = 'rec-card';
+      card.onclick = ()=> showDetail(d, r.key);
+      card.innerHTML = `
+        <div class="rec-top">
+          <div>
+            <div class="rec-store">${escapeAttr(d.store)||'（未命名門市）'}</div>
+            <div class="rec-meta">${d.auditType||''}・${d.date||''}・稽核：${escapeAttr(d.auditor||'—')}</div>
+            <div class="rec-meta">送出時間：${dtStr}</div>
+          </div>
+          <div class="rec-score" style="color:${color};">${d.score}</div>
+        </div>
+        ${d.hasMajor ? '<div class="badge fail" style="margin-top:8px;">重大缺失</div>' : ''}
+      `;
+      listEl.appendChild(card);
+    });
+  }catch(e){
+    listEl.innerHTML = '<div class="empty">讀取紀錄時發生問題，請稍後再試。</div>';
+  }
+}
+let currentDetailKey = null;
+let currentDetailData = null;
+function showDetail(d, key){
+  currentDetailData = d;
+  currentDetailKey = key || null;
+  document.getElementById('modal-title').textContent = (d.store||'門市') + ' 稽核詳情';
+  let html = `
+    <div class="mini-sec">
+      <h4>基本資料</h4>
+      <div class="mini-item"><div class="txt">稽核類型</div><div>${d.auditType||'—'}</div></div>
+      <div class="mini-item"><div class="txt">稽核日期</div><div>${d.date||'—'}</div></div>
+      <div class="mini-item"><div class="txt">稽核人員</div><div>${escapeAttr(d.auditor||'—')}</div></div>
+      <div class="mini-item"><div class="txt">值班主管</div><div>${escapeAttr(d.supervisor||'—')}</div></div>
+      <div class="mini-item"><div class="txt">總分</div><div style="font-weight:800;">${d.score} / 100（扣 ${d.deduction} 分）</div></div>
+    </div>
+  `;
+  SECTIONS.forEach(sec=>{
+    html += `<div class="mini-sec"><h4>${sec.title}</h4>`;
+    sec.items.forEach(it=>{
+      const s = (d.items||{})[`${sec.id}-${it.n}`] || {};
+      const tagCls = s.answer==='yes'?'yes':(s.answer==='no'?'no':'blank');
+      const tagTxt = s.answer==='yes'?'是':(s.answer==='no'?'否'+(s.major?'・重大':''):'未填');
+      html += `<div class="mini-item"><div class="txt">${it.n}. ${it.text}</div><div class="mini-tag ${tagCls}">${tagTxt}</div></div>`;
+      if(s.note){
+        html += `<div style="font-size:12px; color:var(--ink-faint); margin:-4px 0 6px 4px; padding-left:8px; border-left:2px solid var(--line);">說明：${escapeAttr(s.note)}</div>`;
+      }
+    });
+    html += `</div>`;
+  });
+  if(d.teas && d.teas.length){
+    html += `<div class="mini-sec"><h4>茶品風味測試</h4>`;
+    d.teas.forEach(t=>{
+      if(!t.name && !t.normal) return;
+      html += `<div class="mini-item"><div class="txt">${escapeAttr(t.name)||'（未命名）'}　外觀:${t.appearance||'—'}　香氣:${t.aroma||'—'}　口感:${(t.taste||[]).join('、')||'—'}</div><div class="mini-tag ${t.normal==='yes'?'yes':(t.normal==='no'?'no':'blank')}">${t.normal==='yes'?'正常':(t.normal==='no'?'異常':'未填')}</div></div>`;
+      if(t.normal==='no' && t.note){
+        html += `<div style="font-size:12px; color:var(--ink-faint); margin:-4px 0 6px 4px; padding-left:8px; border-left:2px solid var(--line);">異常原因：${escapeAttr(t.note)}</div>`;
+      }
+    });
+    html += `</div>`;
+  }
+  html += `<div class="mini-sec"><h4>品管檢核</h4>
+    <div class="mini-item"><div class="txt">茶嘴定期清潔</div><div class="mini-tag ${d.checklist&&d.checklist.nozzle?'yes':'blank'}">${d.checklist&&d.checklist.nozzle?'已完成':'未勾選'}</div></div>
+    <div class="mini-item"><div class="txt">茶桶定期泡酵素</div><div class="mini-tag ${d.checklist&&d.checklist.enzyme?'yes':'blank'}">${d.checklist&&d.checklist.enzyme?'已完成':'未勾選'}</div></div>
+    <div class="mini-item"><div class="txt">工作日誌填寫完整</div><div class="mini-tag ${d.checklist&&d.checklist.log?'yes':'blank'}">${d.checklist&&d.checklist.log?'已完成':'未勾選'}</div></div>
+  </div>`;
+  if(d.feedback){ html += `<div class="mini-sec"><h4>門市反饋</h4><div style="font-size:13px;color:var(--ink-soft);">${escapeAttr(d.feedback)}</div></div>`; }
+  if(d.notes){ html += `<div class="mini-sec"><h4>備註</h4><div style="font-size:13px;color:var(--ink-soft);">${escapeAttr(d.notes)}</div></div>`; }
+  html += `<div class="mini-sec">
+    <h4>後續備註（可編輯）</h4>
+    <div style="font-size:11.5px; color:var(--ink-faint); margin-bottom:8px;">供後續追蹤、複核調整或補充說明使用，儲存後所有使用者皆可看到</div>
+    <textarea id="detail-note" placeholder="輸入後續備註…" style="width:100%; min-height:70px; border:1px solid var(--line); border-radius:8px; background:var(--paper); padding:9px 10px; font-family:inherit; font-size:13px; color:var(--ink); resize:vertical;">${escapeAttr(d.followUpNote||'')}</textarea>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px;">
+      <span id="detail-note-status" style="font-size:11px; color:var(--ink-faint);"></span>
+      <button type="button" class="btn-primary" style="padding:8px 16px; font-size:13px;" onclick="saveDetailNote()" ${currentDetailKey?'':'disabled'}>儲存備註</button>
+    </div>
+  </div>`;
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-mask').classList.add('show');
+}
+async function saveDetailNote(){
+  if(!currentDetailKey || !currentDetailData) return;
+  const statusEl = document.getElementById('detail-note-status');
+  const val = document.getElementById('detail-note').value;
+  currentDetailData.followUpNote = val;
+  statusEl.textContent = '儲存中…';
+  try{
+    await window.storage.set(currentDetailKey, JSON.stringify(currentDetailData), true);
+    statusEl.textContent = '已儲存 ' + new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    statusEl.textContent = '儲存失敗，請檢查網路連線';
+  }
+}
+function closeModal(e){ document.getElementById('modal-mask').classList.remove('show'); }
+
+/* ============ INIT ============ */
+async function init(){
+  if(window.__usingLocalStorageFallback){
+    const banner = document.getElementById('local-mode-banner');
+    if(banner) banner.style.display = 'block';
+  }
+  initState();
+  document.getElementById('f-date').value = state.date;
+  await loadDeletedStores();
+  document.getElementById('f-store').innerHTML = storeOptionsHTML();
+  renderSections();
+  renderTeas();
+  applyFlowTexts();
+  setupFlowEditing();
+  setupSig('auditor'); setupSig('supervisor');
+  await loadDraft();
+  // reflect loaded draft into form fields
+  document.getElementById('f-store').value = state.store||'';
+  document.getElementById('f-date').value = state.date || new Date().toISOString().slice(0,10);
+  document.getElementById('f-auditor').value = state.auditor||'';
+  document.getElementById('f-supervisor').value = state.supervisor||'';
+  document.getElementById('f-feedback').value = state.feedback||'';
+  document.getElementById('f-notes').value = state.notes||'';
+  document.querySelectorAll('#f-audittype button').forEach(b=> b.classList.toggle('on', b.dataset.v===state.auditType));
+  document.getElementById('chk-nozzle').checked = !!(state.checklist&&state.checklist.nozzle);
+  document.getElementById('chk-enzyme').checked = !!(state.checklist&&state.checklist.enzyme);
+  document.getElementById('chk-log').checked = !!(state.checklist&&state.checklist.log);
+  // rebuild item UI states
+  renderSections();
+  Object.keys(state.items).forEach(key=>{
+    const s = state.items[key];
+    const row = document.getElementById('item-'+key);
+    if(!row) return;
+    if(s.answer){
+      row.querySelector('.yn-btn.'+(s.answer)).classList.add('on');
+      if(s.answer==='no'){
+        const mr=document.getElementById('major-'+key); mr.classList.add('show'); mr.querySelector('input').checked=!!s.major;
+      }
+      const nr=document.getElementById('note-'+key); nr.classList.add('show'); nr.querySelector('textarea').value = s.note||'';
+    }
+    if(s.tags && s.tags.length){
+      row.querySelectorAll('.tag-chip').forEach(chip=>{ if(s.tags.includes(chip.textContent)) chip.classList.add('on'); });
+    }
+  });
+  renderTeas();
+  updateScore();
+}
+init();
+window.addEventListener('resize', ()=>{ Object.values(sigPads).forEach(p=>{}); });
+</script>
+</body>
+</html>
+
