@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>可不可熟成茶行丨丈量清冊</title>
+<style>
+  :root{
+    --dark:#073C4E;
+    --tan:#E4CFB6;
+    --tan-soft:#f2e7d6;
+    --paper:#fffdf9;
+    --ink:#1c1c1c;
+    --req:#b3261e;
+    --mono:"Menlo","Consolas",monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--tan);
+    font-family:"Heiti TC","Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
+    color:var(--ink);
+    padding:32px 16px 80px;
+  }
+  .sheet{
+    max-width:920px;
+    margin:0 auto;
+    background:var(--paper);
+    border:1px solid var(--dark);
+    box-shadow:0 6px 24px rgba(7,60,78,0.18);
+    padding:40px 44px 56px;
+    position:relative;
+  }
+  .logo{
+    position:absolute;
+    top:28px;
+    left:32px;
+    height:56px;
+    width:auto;
+    border-radius:3px;
+  }
+  header{text-align:center;margin-bottom:8px;}
+  header h1{
+    font-size:26px;
+    letter-spacing:6px;
+    margin:0 0 6px;
+    font-weight:900;
+    color:var(--dark);
+  }
+  header h2{
+    font-size:22px;
+    letter-spacing:10px;
+    margin:0;
+    font-weight:900;
+    color:var(--dark);
+  }
+  .band{
+    background:var(--dark);
+    color:var(--tan-soft);
+    padding:8px 14px;
+    margin:28px 0 0;
+    font-size:18px;
+    font-weight:900;
+    letter-spacing:2px;
+  }
+  .tab-bar{
+    display:flex;
+    gap:8px;
+    margin:18px 0 0;
+  }
+  .tab-btn{
+    padding:10px 24px;
+    border:1.5px solid var(--dark);
+    border-bottom:none;
+    background:var(--tan-soft);
+    color:var(--dark);
+    font-family:inherit;
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:2px;
+    cursor:pointer;
+    border-radius:4px 4px 0 0;
+  }
+  .tab-btn.active{
+    background:var(--dark);
+    color:var(--tan-soft);
+  }
+  .tab-panel-wrap{
+    border-top:2px solid var(--dark);
+    padding-top:8px;
+  }
+  .panel{ display:none; }
+  .panel.active{ display:block; }
+  .req-note{
+    font-size:12px;
+    color:var(--req);
+    margin:10px 0 0;
+  }
+  .confirm-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(7,60,78,0.55);
+    z-index:999;
+    align-items:center;
+    justify-content:center;
+  }
+  .confirm-overlay.show{ display:flex; }
+  .confirm-box{
+    background:var(--paper);
+    border:1.5px solid var(--dark);
+    border-radius:6px;
+    padding:24px 28px;
+    max-width:320px;
+    text-align:center;
+  }
+  .confirm-box p{
+    color:var(--ink);
+    font-size:15px;
+    margin:0 0 18px;
+  }
+  .confirm-box .btn-row{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+  }
+  .confirm-box button{
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    padding:8px 20px;
+    border:1px solid var(--dark);
+    background:var(--paper);
+    color:var(--dark);
+    cursor:pointer;
+    border-radius:2px;
+  }
+  .confirm-box .btn-yes:hover{ background:var(--req); border-color:var(--req); color:#fff; }
+  .confirm-box .btn-no:hover{ background:var(--dark); color:var(--tan-soft); }
+  .today-note{
+    font-size:13px;
+    color:var(--dark);
+    font-weight:700;
+    margin:6px 0 0;
+  }
+  .panel-title-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .panel-title-row .today-note{ margin:0; }
+  .sub-band{
+    background:var(--dark);
+    color:var(--tan-soft);
+    padding:6px 14px;
+    margin:10px 0 4px;
+    font-size:15px;
+    font-weight:900;
+    letter-spacing:2px;
+  }
+  .footer-date{
+    text-align:right;
+    margin-top:16px;
+  }
+  .pkg-title{
+    font-size:18px;
+    font-weight:900;
+    color:var(--dark);
+    -webkit-text-stroke:0.6px var(--dark);
+    margin:28px 0 14px;
+    letter-spacing:2px;
+    background:var(--tan-soft);
+    border-radius:4px;
+    padding:8px 14px;
+  }
+  .pkg-sub{
+    font-size:13px;
+    font-weight:700;
+    color:var(--req);
+    letter-spacing:0px;
+    -webkit-text-stroke:0;
+    margin-left:4px;
+  }
+  .price-tag{
+    display:inline-block;
+    background:var(--tan-soft);
+    color:var(--dark);
+    font-size:12px;
+    font-weight:700;
+    padding:2px 8px;
+    border-radius:3px;
+    white-space:nowrap;
+  }
+  .guide-section h4{
+    font-size:15px;
+    font-weight:900;
+    color:var(--dark);
+    margin:16px 0 8px;
+  }
+  .guide-section p{
+    font-size:14px;
+    line-height:1.85;
+    color:var(--ink);
+    margin:0 0 14px;
+  }
+  h3.section-title{
+    font-size:20px;
+    letter-spacing:4px;
+    margin:26px 0 16px;
+    display:inline-block;
+    font-weight:900;
+    -webkit-text-stroke:0.6px var(--dark);
+    color:var(--dark);
+  }
+  h3.section-title.banner-title{
+    display:block;
+    background:var(--tan-soft);
+    border-radius:4px;
+    padding:8px 14px;
+  }
+  .row{
+    display:flex;
+    gap:14px;
+    margin-bottom:12px;
+    align-items:baseline;
+  }
+  .row>.label{
+    width:104px;
+    font-weight:900;
+    letter-spacing:2px;
+    flex-shrink:0;
+    -webkit-text-stroke:0.6px var(--dark);
+    color:var(--dark);
+  }
+  .row>.options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    flex:1;
+    min-width:0;
+  }
+  .field-label{
+    color:var(--dark);
+    font-weight:700;
+    flex-shrink:0;
+  }
+  .field-label.req::after{
+    content:" *";
+    color:var(--req);
+    font-weight:900;
+  }
+  label.chk{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    cursor:pointer;
+    user-select:none;
+    flex-shrink:0;
+  }
+  input[type=radio],
+  input[type=checkbox]{
+    width:17px;height:17px;
+    accent-color:var(--dark);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  input[type=text]{
+    border:none;
+    border-bottom:1px solid var(--dark);
+    background:transparent;
+    font-family:inherit;
+    font-size:15px;
+    padding:2px 4px;
+    color:var(--ink);
+    min-width:44px;
+    flex-shrink:0;
+  }
+  input[type=text]:focus{
+    outline:none;
+    border-bottom:1.5px solid var(--dark);
+    background:var(--tan-soft);
+  }
+  input[type=text].wide{ min-width:110px; }
+  input[type=text].narrow{ min-width:30px; }
+  input[type=text].tiny{ min-width:20px; }
+  #panel-old input[type=text]{
+    width:70px;
+    min-width:70px;
+    text-align:center;
+  }
+  .item-block{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .item-block>.field-label{ margin-bottom:2px; }
+  .item-block .sub-line{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    white-space:nowrap;
+    padding-left:20px;
+    font-size:15px;
+  }
+  .note{ color:var(--dark); font-size:13px; flex-shrink:0; }
+  .price-box{
+    margin-top:30px;
+    border:1px solid var(--dark);
+    padding:16px;
+    background:var(--tan-soft);
+  }
+  .price-box .title{
+    font-weight:900;
+    -webkit-text-stroke:0.6px var(--dark);
+    margin-bottom:14px;
+    letter-spacing:1px;
+    color:var(--dark);
+  }
+  .price-box textarea{
+    width:100%;
+    min-height:70px;
+    border:1px solid var(--dark);
+    background:var(--paper);
+    font-family:inherit;
+    font-size:15px;
+    padding:8px 10px;
+    resize:vertical;
+  }
+  .divider{
+    border:none;
+    border-top:1px solid var(--dark);
+    margin:20px 0;
+  }
+  .page-break{
+    margin-top:24px;
+    padding-top:8px;
+  }
+  .toolbar{
+    max-width:920px;
+    margin:0 auto 16px;
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+  }
+  .toolbar button{
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    padding:8px 16px;
+    border:1px solid var(--dark);
+    background:var(--paper);
+    color:var(--dark);
+    cursor:pointer;
+    border-radius:2px;
+    letter-spacing:1px;
+  }
+  .toolbar button:hover{
+    background:var(--dark);
+    color:var(--tan-soft);
+  }
+  textarea.comm{
+    width:100%;
+    min-height:120px;
+    border:1px solid var(--dark);
+    background:var(--paper);
+    font-family:inherit;
+    font-size:15px;
+    padding:10px;
+    resize:vertical;
+  }
+  .sign-row{
+    display:flex;
+    gap:24px;
+    margin-top:24px;
+    flex-wrap:wrap;
+  }
+  .sign-card{
+    border:1.5px solid var(--dark);
+    background:var(--tan-soft);
+    padding:16px 18px;
+    flex:1;
+    min-width:220px;
+  }
+  .sign-card .sc-label{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-weight:900;
+    color:var(--dark);
+    letter-spacing:2px;
+    margin-bottom:8px;
+  }
+  .sign-card .sc-label button{
+    font-family:inherit;
+    font-size:12px;
+    font-weight:700;
+    padding:4px 10px;
+    border:1px solid var(--dark);
+    background:var(--paper);
+    color:var(--dark);
+    cursor:pointer;
+    border-radius:2px;
+    letter-spacing:1px;
+  }
+  .sign-card .sc-label button:hover{
+    background:var(--dark);
+    color:var(--tan-soft);
+  }
+  .sign-pad-wrap{
+    background:var(--paper);
+    border:1px dashed var(--dark);
+    touch-action:none;
+  }
+  .sign-pad-wrap canvas{
+    display:block;
+    width:100%;
+    height:110px;
+    cursor:crosshair;
+  }
+  /* calendar */
+  .cal-head{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+    margin:20px 0 16px;
+  }
+  .cal-head button{
+    font-family:inherit;
+    font-size:16px;
+    font-weight:700;
+    padding:6px 14px;
+    border:1px solid var(--dark);
+    background:var(--paper);
+    color:var(--dark);
+    cursor:pointer;
+    border-radius:2px;
+  }
+  .cal-head button:hover{ background:var(--dark); color:var(--tan-soft); }
+  .cal-title{
+    font-size:20px;
+    font-weight:900;
+    color:var(--dark);
+    letter-spacing:2px;
+    min-width:140px;
+    text-align:center;
+  }
+  .cal-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:6px;
+  }
+  .cal-dow{
+    text-align:center;
+    font-weight:700;
+    color:var(--dark);
+    font-size:13px;
+    padding-bottom:4px;
+  }
+  .cal-cell{
+    min-height:64px;
+    border:1px solid var(--tan-soft);
+    background:var(--paper);
+    border-radius:4px;
+    padding:6px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .cal-cell.empty{ background:transparent; border:none; cursor:default; }
+  .cal-cell .d-num{ font-size:13px; color:var(--ink); font-weight:700; }
+  .cal-cell.today{ border:1.5px solid var(--dark); background:var(--tan-soft); }
+  .cal-cell.selected{ background:var(--dark); }
+  .cal-cell.selected .d-num{ color:var(--tan-soft); }
+  .cal-cell .store-name{
+    font-size:11px;
+    color:var(--tan-soft);
+    background:var(--dark);
+    border-radius:3px;
+    padding:2px 4px;
+    line-height:1.3;
+    word-break:break-all;
+    align-self:stretch;
+  }
+  .cal-cell.selected .store-name{
+    background:var(--tan-soft);
+    color:var(--dark);
+  }
+  .cal-note-box{
+    margin-top:20px;
+    border:1px solid var(--dark);
+    background:var(--tan-soft);
+    padding:16px;
+  }
+  .cal-detail-box{
+    margin-top:16px;
+    border:1px solid var(--dark);
+    background:var(--paper);
+    padding:16px;
+  }
+  .cal-detail-box .title{
+    font-weight:900;
+    color:var(--dark);
+    margin-bottom:10px;
+  }
+  .cal-detail-list{
+    display:flex;
+    flex-direction:column;
+    gap:0;
+  }
+  .cal-detail-empty{
+    font-size:13px;
+    color:var(--ink);
+    opacity:0.6;
+  }
+  .cal-detail-row{
+    display:flex;
+    gap:14px;
+    align-items:baseline;
+    padding:8px 0;
+    border-bottom:1px solid var(--tan-soft);
+    font-size:14px;
+    flex-wrap:wrap;
+  }
+  .cal-detail-row:last-child{ border-bottom:none; }
+  .cal-detail-row .dd-date{
+    font-weight:900;
+    color:var(--dark);
+    min-width:88px;
+    flex-shrink:0;
+  }
+  .cal-detail-row .dd-store{
+    font-weight:700;
+    color:var(--ink);
+  }
+  .cal-detail-row .dd-staff{
+    color:var(--dark);
+    font-size:13px;
+  }
+  .cal-note-box .title{
+    font-weight:900;
+    color:var(--dark);
+    margin-bottom:10px;
+  }
+  .cal-note-box textarea{
+    width:100%;
+    min-height:80px;
+    border:1px solid var(--dark);
+    background:var(--paper);
+    font-family:inherit;
+    font-size:15px;
+    padding:8px 10px;
+    resize:vertical;
+  }
+  .cal-staff-row{
+    display:flex;
+    gap:16px;
+    margin-top:12px;
+    flex-wrap:wrap;
+  }
+  .cal-staff-field{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    flex:1;
+    min-width:140px;
+  }
+  .cal-staff-field label{
+    font-size:13px;
+    font-weight:700;
+    color:var(--dark);
+  }
+  .cal-staff-field input[type=text]{
+    border:1px solid var(--dark);
+    border-bottom:1px solid var(--dark);
+    background:var(--paper);
+    font-family:inherit;
+    font-size:15px;
+    padding:6px 8px;
+    min-width:0;
+  }
+  .cal-staff-field input[type=text]:focus{
+    outline:none;
+    background:var(--tan-soft);
+  }
+  .cal-note-box .btn-row{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+  }
+  .cal-note-box .save-btn,
+  .cal-note-box .clear-btn{
+    font-family:inherit;
+    font-size:13px;
+    font-weight:700;
+    padding:6px 16px;
+    border:1px solid var(--dark);
+    background:var(--paper);
+    color:var(--dark);
+    cursor:pointer;
+    border-radius:2px;
+  }
+  .cal-note-box .save-btn:hover{ background:var(--dark); color:var(--tan-soft); }
+  .cal-note-box .clear-btn:hover{ background:var(--req); border-color:var(--req); color:#fff; }
+  @media (max-width:600px){
+    .sign-row{flex-direction:column;}
+    .cal-cell{min-height:48px;font-size:12px;}
+  }
+  @media print{
+    .toolbar{display:none;}
+    body{background:#fff;padding:0;}
+    .sheet{box-shadow:none;border:none;}
+    .tab-bar{display:none;}
+    .panel{display:block !important;margin-bottom:40px;}
+  }
+  @media (max-width:600px){
+    .sheet{padding:24px 18px 40px;}
+    .logo{height:40px;top:18px;left:18px;}
+    header h1{font-size:20px;letter-spacing:3px;}
+    header h2{font-size:18px;letter-spacing:6px;}
+    .tab-btn{padding:8px 12px;font-size:13px;letter-spacing:1px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button id="printBtn" onclick="printForm()" style="display:none;">列印 / 存成 PDF</button>
+  <button id="resetBtn" onclick="resetForm()" style="display:none;">清除全部</button>
+</div>
+
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <p>確定要清除全部已填寫內容嗎？</p>
+    <div class="btn-row">
+      <button type="button" class="btn-yes" onclick="doResetForm()">確定清除</button>
+      <button type="button" class="btn-no" onclick="hideConfirm()">取消</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="sheet">
+  <img class="logo" src="data:image/png;base64,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" alt="KEBUKE 可不可 品牌LOGO">
+  <header>
+    <h1>可不可熟成茶行</h1>
+    <h2>丈量清冊</h2>
+  </header>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-btn-cal" onclick="switchTab('cal')">行事曆</button>
+    <button class="tab-btn" id="tab-btn-old" onclick="switchTab('old')">原店升級</button>
+    <button class="tab-btn" id="tab-btn-new" onclick="switchTab('new')">新展店／移店</button>
+  </div>
+
+  <div class="tab-panel-wrap">
+
+  <form class="panel" id="panel-old">
+  <div class="panel-title-row">
+    <h3 class="section-title">原店升級</h3>
+    <p class="today-note" id="todayOld"></p>
+  </div>
+  <p class="req-note">＊ 為必填選項</p>
+
+  <p class="pkg-title">套裝方案</p>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <div class="sub-line" style="padding-left:0;">
+      <span class="field-label req" style="font-size:16px;">門面寬度</span>
+      <input type="text" class="narrow" required>
+      <span>米</span>
+      <span class="price-tag">4.5米以上將依比例加價</span>
+    </div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">廣告招牌樣式</span>
+    <div class="sub-line">
+      <span>橫招，尺寸</span>
+      <input type="text" class="wide" required>
+      <span>cm</span>
+      <span class="price-tag">400*140cm以上將依比例加價</span>
+    </div>
+    <div class="sub-line">
+      <span>圓招，尺寸(直徑)</span>
+      <input type="text" required>
+      <span>cm</span>
+      <span class="price-tag">直徑120cm以上將依比例加價</span>
+    </div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">燈具數量</span>
+    <div class="sub-line">
+      <span>點餐/取餐區投射燈數量</span>
+      <input type="text" class="narrow" required>
+      <span>個</span>
+    </div>
+    <div class="sub-line">
+      <span>內場崁燈，數量</span>
+      <input type="text" class="narrow" required>
+      <span>個</span>
+    </div>
+    <div class="sub-line">
+      <label class="chk"><input type="checkbox" name="lightqty-old" data-group-required="1"><span>增設燈具</span></label>
+    </div>
+    <div class="sub-line" style="padding-left:42px;">
+      <span>位置</span>
+      <input type="text">
+    </div>
+    <div class="sub-line" style="padding-left:42px;">
+      <span>數量</span>
+      <input type="text" class="narrow">
+      <span>個</span>
+    </div>
+    <div class="sub-line">
+      <label class="chk"><input type="checkbox" name="lightqty-old" data-group-required="1"><span>不須增設</span></label>
+    </div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">鋁槽條燈新增</span>
+    <div class="sub-line">
+      <span>-室外</span>
+      <label class="chk"><input type="radio" name="alutrack-out-old" required><span>需要</span></label>
+      <label class="chk"><input type="radio" name="alutrack-out-old"><span>無法施作</span></label>
+    </div>
+    <div class="sub-line">
+      <span>-室內</span>
+      <label class="chk"><input type="radio" name="alutrack-in-old" required><span>需要</span></label>
+      <label class="chk"><input type="radio" name="alutrack-in-old"><span>無法施作</span></label>
+    </div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">廣告帆布規格</span>
+    <div class="sub-line">
+      <label class="chk"><input type="radio" name="canvas-old" required><span>需要，尺寸</span></label>
+      <input type="text">
+      <span>cm</span>
+      <span class="price-tag">100才以上將依比例加價</span>
+    </div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="canvas-old"><span>無帆布</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">免爬高廣告布條架</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="rack-old" required><span>需要</span></label></div>
+    <div class="sub-line">
+      <label class="chk"><input type="radio" name="rack-old"><span>無法安裝，</span></label>
+      <input type="text" class="tiny"><span>cm</span>
+      <span class="price-tag">270cm以下改以X型展架擺放</span>
+    </div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">門牌位置</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="doorplate-old" required><span>騎樓柱</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="doorplate-old"><span>門拱</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="doorplate-old"><span>無法施作</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">騎樓柱-油漆</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pillarpaint-old" required><span>1支</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pillarpaint-old"><span>2支</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pillarpaint-old"><span>無法施作</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pillarpaint-old"><span>無騎樓柱</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">騎樓柱-塑鋁板</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pillaralum-old" required><span>1支</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pillaralum-old"><span>2支</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pillaralum-old"><span>無法施作</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pillaralum-old"><span>無騎樓柱</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">鐵框大圖-1(打卡鏡)</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="frame1-old" required><span>需要</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="frame1-old"><span>移除</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="frame1-old"><span>無此設備</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">鐵框大圖-2(輸出大圖)</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="frame2-old" required><span>需要</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="frame2-old"><span>移除</span></label></div>
+    <div class="sub-line">
+      <label class="chk"><input type="radio" name="frame2-old"><span>移位</span></label>
+      <input type="text">
+    </div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="frame2-old"><span>無此設備</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">騎樓平板燈</span>
+    <div class="sub-line">
+      <label class="chk"><input type="radio" name="light-old" required><span>依廠商空間評估規劃(</span></label>
+      <label class="chk"><input type="radio" name="light-size-old" required><span>3*2</span></label>
+      <label class="chk"><input type="radio" name="light-size-old"><span>3*3</span></label>
+      <label class="chk"><input type="radio" name="light-size-old"><span>4*1</span></label>
+      <label class="chk"><input type="radio" name="light-size-old"><span>4*3</span></label>
+      <span>)</span>
+    </div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="light-old"><span>無騎樓</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">門拱</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="arch-old" required><span>磁磚</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="arch-old"><span>油漆</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="arch-old"><span>無此設備</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">洞洞板展示櫃</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pegboard-old" required><span>牆面固定式洞洞板</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pegboard-old"><span>門片式洞洞板</span></label></div>
+    <div class="sub-line">
+      <label class="chk"><input type="radio" name="pegboard-old"><span>乎乾燈箱內洞洞板(長*寬*深度)</span></label>
+      <input type="text">
+      <span>cm</span>
+    </div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">原木作櫃台-踢腳板</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="counter1-old" required><span>需要</span></label></div>
+    <div class="sub-line">
+      <label class="chk"><input type="radio" name="counter1-old"><span>不需要，</span></label>
+      <label class="chk"><input type="radio" name="counter1-reason-old"><span>櫃台原本墊高</span></label>
+      <label class="chk"><input type="radio" name="counter1-reason-old"><span>不足5cm</span></label>
+    </div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">點餐出餐口</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="window-old" required><span>加裝玻璃+麥克風</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="window-old"><span>使用原有玻璃+麥克風</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">櫃台上方黑色鏡面</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="mirror-old" required><span>需要</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="mirror-old"><span>使用原有</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="mirror-old"><span>無法施作，改以木作增設</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">音響外移</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="speaker-old" required><span>需要外移</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="speaker-old"><span>使用原有</span></label></div>
+    <div class="sub-line">
+      <label class="chk"><input type="radio" name="speaker-old"><span>保留原有，外部增設</span></label>
+      <span class="price-tag">費用另計</span>
+    </div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="speaker-old"><span>無法施作</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">乎乾燈箱－更換豪卡板</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="hgboard-old" required><span>需要</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="hgboard-old"><span>不需要，以展示櫃洞洞板取代</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">室內－畫框(3個)撤除拔釘＋補土補漆</span>
+    <div class="sub-line"><label class="chk"><input type="checkbox" name="frameremove-old" required><span>需要</span></label></div>
+  </div>
+
+  <p class="pkg-title">原店改裝加價 <span class="pkg-sub">【須配合總部施作】</span></p>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">廣告招牌樣式-直招</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="signdirect-old" required><span>保留</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="signdirect-old"><span>拆除</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="signdirect-old"><span>不需要</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">廣告招牌樣式-方招</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="signsquare-old" required><span>保留</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="signsquare-old"><span>拆除</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="signsquare-old"><span>不需要</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">戶外防水油漆</span>
+    <div class="sub-line">
+      <span style="min-width:56px;display:inline-block;">-門拱</span>
+      <label class="chk"><input type="radio" name="archpaint-old" required><span>需要</span></label>
+      <span class="price-tag">$2,400/座</span>
+      <label class="chk"><input type="radio" name="archpaint-old"><span>不需要</span></label>
+    </div>
+    <div class="sub-line">
+      <span style="min-width:56px;display:inline-block;">-騎樓柱</span>
+      <label class="chk"><input type="radio" name="pillarpaint2-old" required><span>需要</span></label>
+      <span class="price-tag">$1,800/支</span>
+      <label class="chk"><input type="radio" name="pillarpaint2-old"><span>不需要</span></label>
+    </div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">茶標牆方案</span>
+    <div class="sub-line">
+      <label class="chk"><input type="radio" name="teawall-old" required><span>橫式鏡面(</span></label>
+      <label class="chk"><input type="radio" name="teawallpaint1-old" required><span>水泥漆</span></label>
+      <label class="chk"><input type="radio" name="teawallpaint1-old"><span>石頭漆</span></label>
+      <span>)</span>
+    </div>
+    <div class="sub-line">
+      <label class="chk"><input type="radio" name="teawall-old"><span>壓克力字(</span></label>
+      <label class="chk"><input type="radio" name="teawallpaint2-old" required><span>水泥漆</span></label>
+      <label class="chk"><input type="radio" name="teawallpaint2-old"><span>石頭漆</span></label>
+      <span>)</span>
+    </div>
+    <div class="sub-line">
+      <label class="chk"><input type="radio" name="teawall-old"><span>其他</span></label>
+      <input type="text" class="wide">
+    </div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="teawall-old"><span>不需要</span></label></div>
+  </div>
+
+  <p class="pkg-title">原店改裝加價 <span class="pkg-sub">【可自行找廠商施作，由總部提供型號】</span></p>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">騎樓PVC地貼更換</span>
+    <div class="sub-line">
+      <label class="chk"><input type="radio" name="pvcfloor-old" required><span>全數換新(</span></label>
+      <label class="chk"><input type="radio" name="pvcfloorwho-old" required><span>總部廠商</span></label>
+      <label class="chk"><input type="radio" name="pvcfloorwho-old"><span>業主自行施作</span></label>
+      <span>)</span>
+    </div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pvcfloor-old"><span>全數拆除</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pvcfloor-old"><span>不需更換</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">櫃台L型PVC地貼</span>
+    <div class="sub-line">
+      <label class="chk"><input type="radio" name="pvccounter-old" required><span>全數換新(</span></label>
+      <label class="chk"><input type="radio" name="pvccounterwho-old" required><span>總部廠商</span></label>
+      <label class="chk"><input type="radio" name="pvccounterwho-old"><span>業主自行施作</span></label>
+      <span>)</span>
+    </div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pvccounter-old"><span>全數拆除</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pvccounter-old"><span>不需更換</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">原木作櫃台-護木漆</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="woodcare-old" required><span>總部廠商施作</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="woodcare-old"><span>業主自行施作</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">招牌內部燈管更換(圓招/方招)</span>
+    <div class="sub-line">
+      <label class="chk"><input type="radio" name="signlamp-old" required><span>全數換新(</span></label>
+      <label class="chk"><input type="radio" name="signlampwho-old" required><span>總部廠商</span></label>
+      <label class="chk"><input type="radio" name="signlampwho-old"><span>業主自行施作</span></label>
+      <span>)</span>
+      <span class="price-tag">$3,500/6支</span>
+    </div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="signlamp-old"><span>不需更換</span></label></div>
+  </div>
+
+  <div class="price-box">
+    <div class="title">※其他加價項目</div>
+    <textarea rows="4"></textarea>
+  </div>
+
+  <h3 class="section-title banner-title" style="margin-top:34px;">選配<span class="note" style="font-size:14px;font-weight:400;-webkit-text-stroke:0;margin-left:10px;">須依實際丈量狀況評估是否可執行</span></h3>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">自助點餐機(需擺放洞洞板及打卡鏡旁)</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="kiosk-old" required><span>需要</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="kiosk-old"><span>不需要</span></label></div>
+  </div>
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">雞蛋糕</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="eggcake-old" required><span>需要</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="eggcake-old"><span>不需要</span></label></div>
+  </div>
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">煮茶機</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="teabrewer-old" required><span>需要</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="teabrewer-old"><span>不需要</span></label></div>
+  </div>
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">新型pos機</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pos-old" required><span>1台</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pos-old"><span>2台</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="pos-old"><span>不需要</span></label></div>
+  </div>
+
+  <div class="guide-section">
+    <h3 class="section-title banner-title" style="margin-top:34px;">施工注意事項</h3>
+
+    <h4>一、油漆施工說明</h4>
+    <p>本次油漆工程係於原有牆面及木作面進行顏色變更與重漆施作，因各門市原有底材、漆面狀況及原色深淺不同，完工後可能出現些微色差、均勻度差異或紋理透出等情形；若屬既有底材特性所致，將無法進行調整。</p>
+
+    <h4>二、工程期程說明</h4>
+    <p>本次工程預計施工7日（含5日停業施工及2日營業施工），實際進度將依現場狀況滾動式調整；如遇天候、突發狀況或其他不可抗力因素，施工順序及日期亦將彈性調整。</p>
+    <p>若工程進度提前完成，將第一時間通知，並由業主自行評估是否提前恢復營業。另因各工項由不同專業工班施作，皆有既定排程，若部分工項提前完成而後續工班無法同步進場，可能出現特定時段無施工人員之情形，屬正常工程安排，敬請見諒。</p>
+
+    <h4>三、原店改裝自行加價說明</h4>
+    <p>由業主自行施作/自行委外施作之項目，總部將提供指定型號及安裝位置，請依總部規範之型號、規格及指定位置進行製作與安裝，並避開原店改裝停業施工期間安排作業，且須於改裝完工驗收前完成施作，以利後續整體驗收作業順利進行。</p>
+  </div>
+
+  <div class="page-break">
+    <p class="today-note footer-date" id="todayOldFooter"></p>
+
+    <div class="sign-row">
+      <div class="sign-card">
+        <div class="sc-label">
+          <span>業主簽名</span>
+          <button type="button" onclick="clearSign('oldOwnerSign')">清除簽名</button>
+        </div>
+        <div class="sign-pad-wrap">
+          <canvas id="oldOwnerSign"></canvas>
+        </div>
+      </div>
+
+      <div class="sign-card">
+        <div class="sc-label">
+          <span>總部人員簽名</span>
+          <button type="button" onclick="clearSign('oldHqSign')">清除簽名</button>
+        </div>
+        <div class="sign-pad-wrap">
+          <canvas id="oldHqSign"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </form>
+
+
+  <form class="panel" id="panel-new">
+  <div class="panel-title-row">
+    <h3 class="section-title">新展店/移店</h3>
+    <p class="today-note" id="todayNew"></p>
+  </div>
+  <p class="req-note">＊ 為必填選項</p>
+
+  <div class="row">
+    <div class="label">店面</div>
+    <div class="options">
+      <div class="item-block">
+        <span class="field-label req">門面寬度是否足以3.8-4.5m</span>
+        <div class="sub-line"><label class="chk"><input type="radio" name="w245-new" required><span>是</span></label></div>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="w245-new"><span>否，超過／不足</span></label>
+          <input type="text" class="tiny">
+        </div>
+      </div>
+      <div class="item-block">
+        <span class="field-label req">門面深度是否足以7.5m(以上)</span>
+        <div class="sub-line"><label class="chk"><input type="radio" name="d275-new" required><span>是</span></label></div>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="d275-new"><span>否，超過／不足</span></label>
+          <input type="text" class="tiny">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="label">店裝</div>
+    <div class="options">
+
+      <div class="item-block">
+        <span class="field-label req">廣告招牌樣式</span>
+        <div class="sub-line">
+          <label class="chk"><input type="checkbox" name="sign-new" data-group-required="1"><span>橫招，尺寸</span></label>
+          <input type="text" class="wide">
+        </div>
+        <div class="sub-line">
+          <label class="chk"><input type="checkbox" name="sign-new" data-group-required="1"><span>圓招，尺寸(直徑)</span></label>
+          <input type="text">
+        </div>
+        <div class="sub-line">
+          <label class="chk"><input type="checkbox" name="sign-new" data-group-required="1"><span>直招，</span></label>
+          <label class="chk"><input type="radio" name="sign-dir-new" required><span>左</span></label>
+          <label class="chk"><input type="radio" name="sign-dir-new"><span>右</span></label>
+        </div>
+        <div class="sub-line">
+          <label class="chk"><input type="checkbox" name="sign-new" data-group-required="1"><span>不須直招</span></label>
+        </div>
+        <div class="sub-line">
+          <label class="chk"><input type="checkbox" name="sign-new" data-group-required="1"><span>其他</span></label>
+          <input type="text" class="wide">
+        </div>
+      </div>
+
+      <div class="item-block">
+        <span class="field-label req">廣告帆布規格</span>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="canvas-new" required><span>需要，規格(尺寸)</span></label>
+          <input type="text">
+        </div>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="canvas-new"><span>無帆布</span></label>
+        </div>
+      </div>
+
+      <div class="item-block">
+        <span class="field-label req">免爬高廣告布條架</span>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="rack-new" required><span>需要</span></label>
+        </div>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="rack-new"><span>無法安裝</span></label>
+          <input type="text" class="tiny">
+          <span class="note">(250cm以下改以X型展架擺放)</span>
+        </div>
+      </div>
+
+      <div class="item-block">
+        <span class="field-label req">騎樓柱+塑鋁踢腳板</span>
+        <div class="sub-line"><label class="chk"><input type="radio" name="pillar-new" required><span>1支</span></label></div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="pillar-new"><span>2支</span></label></div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="pillar-new"><span>無騎樓柱</span></label></div>
+      </div>
+
+      <div class="item-block">
+        <span class="field-label req">鐵框大圖-1(打卡鏡)</span>
+        <div class="sub-line"><label class="chk"><input type="radio" name="frame1-new" required><span>需要</span></label></div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="frame1-new"><span>不需要</span></label></div>
+      </div>
+
+      <div class="item-block">
+        <span class="field-label req">鐵框大圖-2(輸出大圖)</span>
+        <div class="sub-line"><label class="chk"><input type="radio" name="frame2-new" required><span>需要</span></label></div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="frame2-new"><span>不需要</span></label></div>
+      </div>
+
+      <div class="item-block">
+        <span class="field-label req">騎樓平板燈</span>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="light-new" required><span>依廠商空間評估規劃(</span></label>
+          <label class="chk"><input type="radio" name="light-size-new" required><span>3*2</span></label>
+          <label class="chk"><input type="radio" name="light-size-new"><span>3*3</span></label>
+          <label class="chk"><input type="radio" name="light-size-new"><span>4*3</span></label>
+          <label class="chk"><input type="radio" name="light-size-new"><span>4*1</span></label>
+          <span>)</span>
+        </div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="light-new"><span>無騎樓</span></label></div>
+      </div>
+
+      <div class="item-block">
+        <span class="field-label req">門拱</span>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="arch-new" required><span>一般街邊店</span></label>
+          <input type="text">
+        </div>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="arch-new"><span>特殊店型</span></label>
+          <input type="text">
+        </div>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="arch-mat-new" required><span>磁磚</span></label>
+          <label class="chk"><input type="radio" name="arch-mat-new"><span>油漆</span></label>
+        </div>
+      </div>
+
+      <div class="item-block">
+        <span class="field-label req">洞洞板展示櫃</span>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="pegboard-new" required><span>位置</span></label>
+          <input type="text">
+        </div>
+        <div class="sub-line" style="padding-left:44px;">
+          <span>尺寸(長*寬*深度)</span>
+          <input type="text" class="wide">
+        </div>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="pegboard-new"><span>特殊規格</span></label>
+          <input type="text" class="wide">
+        </div>
+        <div class="sub-line" style="padding-left:44px;">
+          <span>尺寸(長*寬*深度)</span>
+          <input type="text" class="wide">
+        </div>
+      </div>
+
+      <div class="item-block">
+        <span class="field-label req">原木作櫃台-踢腳板</span>
+        <div class="sub-line"><label class="chk"><input type="radio" name="counter1-new" required><span>需要</span></label></div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="counter1-new"><span>不需要(櫃台原本墊高)</span></label></div>
+      </div>
+
+      <div class="item-block">
+        <span class="field-label req">原木作櫃台-護木漆</span>
+        <div class="sub-line"><label class="chk"><input type="radio" name="counter2-new" required><span>需要</span></label></div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="counter2-new"><span>由業主自行施作</span></label></div>
+      </div>
+
+      <div class="item-block">
+        <span class="field-label req">點餐出餐口</span>
+        <div class="sub-line"><label class="chk"><input type="radio" name="window-new" required><span>加裝玻璃+麥克風</span></label></div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="window-new"><span>使用原有玻璃+麥克風</span></label></div>
+      </div>
+
+      <div class="item-block">
+        <span class="field-label req">櫃台上方茶色玻璃</span>
+        <div class="sub-line"><label class="chk"><input type="radio" name="glass-new" required><span>需要</span></label></div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="glass-new"><span>使用原有</span></label></div>
+      </div>
+
+      <div class="item-block">
+        <span class="field-label req">騎樓PVC地貼破損更換</span>
+        <div class="sub-line"><label class="chk"><input type="radio" name="pvc-new" required><span>使用原有</span></label></div>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="pvc-new"><span>部分更換</span></label>
+          <input type="text" class="tiny">
+          <span>片</span>
+        </div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="pvc-new"><span>全數拆除</span></label></div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="row">
+    <div class="label">空調</div>
+    <div class="options">
+      <div class="item-block">
+        <span class="field-label req">空調類型</span>
+        <div class="sub-line"><label class="chk"><input type="radio" name="ac-new" required><span>吊隱式</span></label></div>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="ac-new"><span>壁掛式，室外機放置位置</span></label>
+          <input type="text" class="wide">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label">水電</div>
+    <div class="options">
+      <div class="item-block">
+        <div class="sub-line" style="padding-left:0;">
+          <span class="field-label req">排水系統</span>
+          <input type="text" class="wide" required>
+        </div>
+      </div>
+      <div class="item-block">
+        <span class="field-label req">水塔</span>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="watertank-new" required><span>添購</span></label>
+          <input type="text" class="tiny"><span>噸</span>
+          <input type="text" class="tiny"><span>顆</span>
+        </div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="watertank-new"><span>使用原屋水塔</span></label></div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="watertank-new"><span>業主自行添購</span></label></div>
+      </div>
+      <div class="item-block">
+        <span class="field-label req">大電申請</span>
+        <div class="sub-line"><label class="chk"><input type="radio" name="power-new" required><span>總部負責</span></label></div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="power-new"><span>業主自行申請</span></label></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label">騎樓地板</div>
+    <div class="options">
+      <div class="item-block">
+        <span class="field-label req">地板處理方式</span>
+        <div class="sub-line"><label class="chk"><input type="radio" name="arcade-floor-new" required><span>黏貼塑膠地貼</span></label></div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="arcade-floor-new"><span>泥作</span></label></div>
+        <div class="sub-line">
+          <label class="chk"><input type="radio" name="arcade-floor-new"><span>其它</span></label>
+          <input type="text" class="tiny">
+          <span class="note">※騎樓不可外推</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label">鐵捲門</div>
+    <div class="options">
+      <div class="item-block">
+        <span class="field-label req">處理方式</span>
+        <div class="sub-line"><label class="chk"><input type="radio" name="rolldoor-new" required><span>總部負責</span></label></div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="rolldoor-new"><span>使用原有鐵捲門</span></label></div>
+        <div class="sub-line"><label class="chk"><input type="radio" name="rolldoor-new"><span>業主自行處理</span></label></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="price-box">
+    <div class="title">現場評估加價項目（實際金額須以報價單為主）：</div>
+    <textarea rows="4"></textarea>
+  </div>
+
+  <h3 class="section-title banner-title" style="margin-top:34px;">選配<span class="note" style="font-size:14px;font-weight:400;-webkit-text-stroke:0;margin-left:10px;">須依實際丈量狀況評估是否可執行</span></h3>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">自助點餐機(需擺放洞洞板及打卡鏡旁)</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="kiosk-new" required><span>需要</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="kiosk-new"><span>不需要</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">雞蛋糕</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="eggcake-new" required><span>需要</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="eggcake-new"><span>不需要</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">煮茶機</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="teabrewer-new" required><span>需要</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="teabrewer-new"><span>不需要</span></label></div>
+  </div>
+
+  <div class="item-block" style="margin-bottom:14px;">
+    <span class="field-label req">43吋電視屏幕</span>
+    <div class="sub-line"><label class="chk"><input type="radio" name="tv-new" required><span>需要</span></label></div>
+    <div class="sub-line"><label class="chk"><input type="radio" name="tv-new"><span>不需要</span></label></div>
+  </div>
+
+  <div class="page-break">
+    <h3 class="section-title">※其他溝通項目</h3>
+    <textarea class="comm" placeholder="請輸入其他溝通內容..."></textarea>
+    <p class="today-note footer-date" id="todayNewFooter"></p>
+
+    <div class="sign-row">
+      <div class="sign-card">
+        <div class="sc-label">
+          <span>業主簽名</span>
+          <button type="button" onclick="clearSign('newOwnerSign')">清除簽名</button>
+        </div>
+        <div class="sign-pad-wrap">
+          <canvas id="newOwnerSign"></canvas>
+        </div>
+      </div>
+
+      <div class="sign-card">
+        <div class="sc-label">
+          <span>總部簽名</span>
+          <button type="button" onclick="clearSign('newHqSign')">清除簽名</button>
+        </div>
+        <div class="sign-pad-wrap">
+          <canvas id="newHqSign"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </form>
+
+
+  <div class="panel active" id="panel-cal">
+  <h3 class="section-title">行事曆</h3>
+
+  <div class="cal-head">
+    <button type="button" onclick="calNav(-1)">‹ 上月</button>
+    <div class="cal-title" id="calTitle"></div>
+    <button type="button" onclick="calNav(1)">下月 ›</button>
+  </div>
+
+  <div class="cal-grid" id="calDow"></div>
+  <div class="cal-grid" id="calGrid" style="margin-top:6px;"></div>
+
+  <div class="cal-detail-box">
+    <div class="title">詳細資訊</div>
+    <div id="calDetailList" class="cal-detail-list"></div>
+  </div>
+
+  <div class="cal-note-box">
+    <div class="title" id="calSelTitle">點選日期以新增店名</div>
+    <textarea id="calNoteInput" placeholder="輸入當天的店名，例如：西門店、板橋店..."></textarea>
+    <div class="cal-staff-row">
+      <div class="cal-staff-field">
+        <label for="calStaff1">丈量人員-1</label>
+        <input type="text" id="calStaff1" placeholder="請輸入姓名">
+      </div>
+      <div class="cal-staff-field">
+        <label for="calStaff2">丈量人員-2</label>
+        <input type="text" id="calStaff2" placeholder="請輸入姓名">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="save-btn" onclick="saveCalNote()">儲存</button>
+      <button type="button" class="clear-btn" onclick="clearCalNote()">清除</button>
+    </div>
+  </div>
+  </div>
+
+  </div>
+
+</div>
+
+<script>
+function switchTab(name){
+  document.getElementById('panel-old').classList.toggle('active', name==='old');
+  document.getElementById('panel-new').classList.toggle('active', name==='new');
+  document.getElementById('panel-cal').classList.toggle('active', name==='cal');
+  document.getElementById('tab-btn-old').classList.toggle('active', name==='old');
+  document.getElementById('tab-btn-new').classList.toggle('active', name==='new');
+  document.getElementById('tab-btn-cal').classList.toggle('active', name==='cal');
+  document.getElementById('resetBtn').style.display = (name==='cal') ? 'none' : '';
+  document.getElementById('printBtn').style.display = (name==='cal') ? 'none' : '';
+  if(window.signPadResize){
+    window.signPadResize.forEach(fn=>fn());
+  }
+}
+
+function checkGroupRequired(form){
+  const boxes = form.querySelectorAll('input[type=checkbox][data-group-required]');
+  const groups = {};
+  boxes.forEach(b=>{
+    groups[b.name] = groups[b.name] || [];
+    groups[b.name].push(b);
+  });
+  for(const name in groups){
+    const anyChecked = groups[name].some(b=>b.checked);
+    if(!anyChecked){
+      alert('「'+ (groups[name][0].closest('.item-block')?.querySelector('.field-label')?.textContent || name) +'」請至少勾選一項');
+      groups[name][0].focus();
+      return false;
+    }
+  }
+  return true;
+}
+
+function printForm(){
+  const activePanel = document.querySelector('.panel.active');
+  if(activePanel && activePanel.tagName==='FORM'){
+    if(!activePanel.reportValidity()){
+      return;
+    }
+    if(!checkGroupRequired(activePanel)){
+      return;
+    }
+  }
+  window.print();
+}
+
+function resetForm(){
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+
+function hideConfirm(){
+  document.getElementById('confirmOverlay').classList.remove('show');
+}
+
+function doResetForm(){
+  document.querySelectorAll('#sheet input[type=radio]').forEach(el=>el.checked=false);
+  document.querySelectorAll('#sheet input[type=checkbox]').forEach(el=>el.checked=false);
+  document.querySelectorAll('#sheet input[type=text]').forEach(el=>el.value='');
+  document.querySelectorAll('#sheet textarea').forEach(el=>el.value='');
+  document.querySelectorAll('#sheet canvas').forEach(c=>{
+    const ctx=c.getContext('2d');
+    ctx.clearRect(0,0,c.width,c.height);
+  });
+  calNotes = {};
+  renderCal();
+  hideConfirm();
+}
+
+function clearSign(id){
+  const c=document.getElementById(id);
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+}
+
+function setupSignaturePad(canvasId){
+  const canvas=document.getElementById(canvasId);
+  const ctx=canvas.getContext('2d');
+  let drawing=false;
+  let last={x:0,y:0};
+  let sized=false;
+
+  function resize(){
+    const rect=canvas.getBoundingClientRect();
+    if(rect.width===0) return;
+    if(sized) return;
+    const ratio=window.devicePixelRatio||1;
+    canvas.width=rect.width*ratio;
+    canvas.height=rect.height*ratio;
+    ctx.scale(ratio,ratio);
+    ctx.lineWidth=2;
+    ctx.lineCap='round';
+    ctx.lineJoin='round';
+    ctx.strokeStyle='#073C4E';
+    sized=true;
+  }
+  resize();
+  window.addEventListener('resize', ()=>{ sized=false; resize(); });
+  window.signPadResize = window.signPadResize || [];
+  window.signPadResize.push(resize);
+
+  function getPos(e){
+    const rect=canvas.getBoundingClientRect();
+    if(e.touches && e.touches.length){
+      return {x:e.touches[0].clientX-rect.left, y:e.touches[0].clientY-rect.top};
+    }
+    return {x:e.clientX-rect.left, y:e.clientY-rect.top};
+  }
+
+  function start(e){ drawing=true; last=getPos(e); e.preventDefault(); }
+  function move(e){
+    if(!drawing) return;
+    const pos=getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(last.x,last.y);
+    ctx.lineTo(pos.x,pos.y);
+    ctx.stroke();
+    last=pos;
+    e.preventDefault();
+  }
+  function end(){ drawing=false; }
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  window.addEventListener('mouseup', end);
+  canvas.addEventListener('touchstart', start, {passive:false});
+  canvas.addEventListener('touchmove', move, {passive:false});
+  canvas.addEventListener('touchend', end);
+}
+
+['oldOwnerSign','oldHqSign','newOwnerSign','newHqSign'].forEach(setupSignaturePad);
+
+/* ---------------- 行事曆 ---------------- */
+let calYear, calMonth, calSelected=null;
+let calNotes = {};
+const dowNames=['日','一','二','三','四','五','六'];
+
+function calKey(y,m,d){ return y+'-'+(m+1)+'-'+d; }
+
+function calNav(delta){
+  calMonth += delta;
+  if(calMonth<0){ calMonth=11; calYear--; }
+  if(calMonth>11){ calMonth=0; calYear++; }
+  calSelected=null;
+  renderCal();
+}
+
+function selectDay(y,m,d){
+  calSelected = calKey(y,m,d);
+  document.getElementById('calSelTitle').textContent = y+'年'+(m+1)+'月'+d+'日　店名：';
+  const entry = calNotes[calSelected] || {};
+  document.getElementById('calNoteInput').value = entry.name || '';
+  document.getElementById('calStaff1').value = entry.staff1 || '';
+  document.getElementById('calStaff2').value = entry.staff2 || '';
+  renderCal();
+}
+
+function saveCalNote(){
+  if(!calSelected){ alert('請先點選一個日期'); return; }
+  const name = document.getElementById('calNoteInput').value.trim();
+  const staff1 = document.getElementById('calStaff1').value.trim();
+  const staff2 = document.getElementById('calStaff2').value.trim();
+  if(name || staff1 || staff2){
+    calNotes[calSelected] = {name, staff1, staff2};
+  } else {
+    delete calNotes[calSelected];
+  }
+  renderCal();
+}
+
+function clearCalNote(){
+  if(!calSelected){ alert('請先點選一個日期'); return; }
+  delete calNotes[calSelected];
+  document.getElementById('calNoteInput').value='';
+  document.getElementById('calStaff1').value='';
+  document.getElementById('calStaff2').value='';
+  renderCal();
+}
+
+function renderCalDetailList(){
+  const listEl=document.getElementById('calDetailList');
+  if(!listEl) return;
+  listEl.innerHTML='';
+  const keys = Object.keys(calNotes).sort((a,b)=>{
+    const [ay,am,ad]=a.split('-').map(Number);
+    const [by,bm,bd]=b.split('-').map(Number);
+    return new Date(ay,am-1,ad) - new Date(by,bm-1,bd);
+  });
+  if(keys.length===0){
+    const empty=document.createElement('div');
+    empty.className='cal-detail-empty';
+    empty.textContent='目前尚無任何日期資料';
+    listEl.appendChild(empty);
+    return;
+  }
+  keys.forEach(k=>{
+    const [y,m,d]=k.split('-').map(Number);
+    const entry=calNotes[k];
+    const row=document.createElement('div');
+    row.className='cal-detail-row';
+
+    const dateEl=document.createElement('div');
+    dateEl.className='dd-date';
+    dateEl.textContent=y+'/'+m+'/'+d;
+    row.appendChild(dateEl);
+
+    const storeEl=document.createElement('div');
+    storeEl.className='dd-store';
+    storeEl.textContent=entry.name || '（未填店名）';
+    row.appendChild(storeEl);
+
+    const staffParts=[];
+    if(entry.staff1) staffParts.push('丈量人員-1：'+entry.staff1);
+    if(entry.staff2) staffParts.push('丈量人員-2：'+entry.staff2);
+    if(staffParts.length){
+      const staffEl=document.createElement('div');
+      staffEl.className='dd-staff';
+      staffEl.textContent=staffParts.join('　');
+      row.appendChild(staffEl);
+    }
+
+    listEl.appendChild(row);
+  });
+}
+
+function renderCal(){
+  const dowEl=document.getElementById('calDow');
+  dowEl.innerHTML='';
+  dowNames.forEach(n=>{
+    const d=document.createElement('div');
+    d.className='cal-dow';
+    d.textContent=n;
+    dowEl.appendChild(d);
+  });
+
+  document.getElementById('calTitle').textContent = calYear+'年 '+(calMonth+1)+'月';
+
+  const grid=document.getElementById('calGrid');
+  grid.innerHTML='';
+  const firstDow = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date();
+
+  for(let i=0;i<firstDow;i++){
+    const cell=document.createElement('div');
+    cell.className='cal-cell empty';
+    grid.appendChild(cell);
+  }
+
+  for(let d=1; d<=daysInMonth; d++){
+    const cell=document.createElement('div');
+    let cls='cal-cell';
+    if(today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d) cls+=' today';
+    if(calSelected===calKey(calYear,calMonth,d)) cls+=' selected';
+    cell.className=cls;
+    const num=document.createElement('div');
+    num.className='d-num';
+    num.textContent=d;
+    cell.appendChild(num);
+    const entry=calNotes[calKey(calYear,calMonth,d)];
+    if(entry && entry.name){
+      const nameEl=document.createElement('div');
+      nameEl.className='store-name';
+      nameEl.textContent=entry.name;
+      cell.appendChild(nameEl);
+    }
+    cell.onclick=()=>selectDay(calYear,calMonth,d);
+    grid.appendChild(cell);
+  }
+
+  renderCalDetailList();
+}
+
+(function initCal(){
+  const now=new Date();
+  calYear=now.getFullYear();
+  calMonth=now.getMonth();
+  renderCal();
+})();
+
+(function fillToday(){
+  const now=new Date();
+  const text='填表日期：'+now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日';
+  ['todayOld','todayNew','todayOldFooter','todayNewFooter'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.textContent=text;
+  });
+})();
+</script>
+
+</body>
+</html>
