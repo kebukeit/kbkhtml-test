@@ -1,0 +1,1478 @@
+<title>KEBUKE 總部公務車/外出登記</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #faf6f0;
+    --surface: #ffffff;
+    --surface-alt: #f3eae0;
+    --ink: #073c4e;
+    --ink-muted: #4b6672;
+    --ink-faint: #8ca0a8;
+    --border: #e7dac8;
+    --border-strong: #d8c3a6;
+    --accent: #073c4e;
+    --accent-ink: #073c4e;
+    --accent-soft: #e4cfb6;
+    --accent-strong: #0a4c63;
+    --on-accent: #fbf3e7;
+    --danger: #b23b3b;
+    --danger-ink: #8a2c2c;
+    --danger-soft: #f8e3e0;
+    --ok: #3d7a5c;
+    --ok-soft: #e3efe8;
+    --focus-ring: #073c4e;
+    --shadow: 0 1px 2px rgba(20, 24, 22, 0.06), 0 8px 24px -12px rgba(20, 24, 22, 0.18);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #05202a;
+      --surface: #0b2b36;
+      --surface-alt: #123340;
+      --ink: #f3e9da;
+      --ink-muted: #b9ae9c;
+      --ink-faint: #7c8b90;
+      --border: #1c3d48;
+      --border-strong: #2a4c58;
+      --accent: #e4cfb6;
+      --accent-ink: #3b2a16;
+      --accent-soft: #33291a;
+      --accent-strong: #f0dec5;
+      --on-accent: #073c4e;
+      --danger: #e08585;
+      --danger-ink: #f3c4c4;
+      --danger-soft: #3a1f1f;
+      --ok: #6fbe96;
+      --ok-soft: #1c2f26;
+      --focus-ring: #e4cfb6;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #05202a;
+    --surface: #0b2b36;
+    --surface-alt: #123340;
+    --ink: #f3e9da;
+    --ink-muted: #b9ae9c;
+    --ink-faint: #7c8b90;
+    --border: #1c3d48;
+    --border-strong: #2a4c58;
+    --accent: #e4cfb6;
+    --accent-ink: #3b2a16;
+    --accent-soft: #33291a;
+    --accent-strong: #f0dec5;
+    --on-accent: #073c4e;
+    --danger: #e08585;
+    --danger-ink: #f3c4c4;
+    --danger-soft: #3a1f1f;
+    --ok: #6fbe96;
+    --ok-soft: #1c2f26;
+    --focus-ring: #e4cfb6;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", "Noto Sans TC", -apple-system, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 {
+    font-family: "Zilla Slab", "Noto Serif TC", serif;
+    font-weight: 600;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  a { color: var(--accent-strong); }
+
+  /* ---------- shell ---------- */
+
+  .shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 20px 64px;
+  }
+
+  header.top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 14px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mark {
+    width: 32px;
+    height: 32px;
+    flex: none;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-strong);
+  }
+
+  .mark svg { width: 17px; height: 17px; }
+
+  header.top h1 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+
+  header.top p {
+    margin: 1px 0 0;
+    color: var(--ink);
+    font-family: "Zilla Slab", "Noto Serif TC", serif;
+    font-weight: 500;
+    font-size: 0.9rem;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---------- module switch ---------- */
+
+  .module-switch {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+
+  .module-btn {
+    flex: 1;
+    font: inherit;
+    font-family: "Zilla Slab", "Noto Serif TC", serif;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .module-btn:hover { background: var(--surface-alt); }
+
+  .module-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .module-panel:not([hidden]) { display: block; }
+
+  .main-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface-alt);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 20px;
+  }
+
+  .main-tabs .tab-btn {
+    flex: 1;
+    text-align: center;
+    padding: 10px 10px;
+    font-size: 0.9rem;
+  }
+
+  .view-panel.form-view {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .view-panel + .view-panel { margin-top: 0; }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+  }
+
+  .module-panel > .panel + .panel,
+  .module-panel > .main-tabs + .panel { margin-top: 0; }
+
+  .panel-head {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .panel-head h2 {
+    font-size: 1.05rem;
+  }
+
+  .panel-head .count {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    font-family: "IBM Plex Mono", monospace;
+  }
+
+  .dept-filter { width: auto; padding: 7px 10px; font-size: 0.85rem; }
+
+  /* ---------- form ---------- */
+
+  form { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 15px; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+
+  .field label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .req { color: var(--danger); font-weight: 700; }
+
+  select, input[type="text"], input[type="date"], textarea {
+    font: inherit;
+    color: var(--ink);
+    background: var(--surface-alt);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 9px 11px;
+    width: 100%;
+  }
+
+  select:focus, input:focus, textarea:focus, button:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 1px;
+  }
+
+  textarea { resize: vertical; min-height: 64px; font-family: inherit; }
+
+  .time-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; }
+  .time-row .sep { color: var(--ink-faint); font-size: 0.85rem; text-align: center; }
+
+  .mode-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--surface-alt);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+  }
+
+  .mode-toggle label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 6px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .mode-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+
+  .mode-toggle label.active {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+
+  button.submit {
+    margin-top: 4px;
+    background: var(--accent);
+    color: var(--on-accent);
+    border: none;
+    border-radius: 8px;
+    padding: 11px 16px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+  }
+
+  button.submit:hover { filter: brightness(1.08); }
+  button.submit:active { filter: brightness(0.96); }
+  button.submit:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  .banner {
+    font-size: 0.85rem;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: none;
+    line-height: 1.45;
+  }
+
+  .banner.show { display: block; }
+  .banner.error { background: var(--danger-soft); color: var(--danger-ink); }
+  .banner.ok { background: var(--ok-soft); color: var(--ok); }
+  .banner.muted { background: var(--surface-alt); color: var(--ink-muted); border: 1px dashed var(--border-strong); }
+
+  /* ---------- schedule ---------- */
+
+  .schedule-body { padding: 8px 12px 18px; }
+
+  .tab-btn {
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    background: none;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 14px;
+    cursor: pointer;
+  }
+
+  .tab-btn.active {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+
+  /* ---------- daily view ---------- */
+
+  .daily-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 20px 4px;
+  }
+
+  .daily-nav input[type="date"] { flex: 1; }
+
+  .nav-btn {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .nav-btn:hover { background: var(--surface-alt); }
+
+  .today-btn {
+    flex: none;
+    border-radius: 7px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.8rem;
+    padding: 0 12px;
+    height: 32px;
+    cursor: pointer;
+  }
+
+  .today-btn:hover { background: var(--surface-alt); }
+
+  .daily-heading {
+    padding: 12px 20px 2px;
+    font-size: 0.82rem;
+    color: var(--ink-muted);
+    font-weight: 600;
+  }
+
+  /* ---------- calendar view ---------- */
+
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 20px 10px;
+  }
+
+  .cal-month-label {
+    flex: 1;
+    font-family: "Zilla Slab", serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .cal-scroll { overflow-x: auto; padding: 0 12px 16px; }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(96px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    min-width: 700px;
+  }
+
+  .cal-dow {
+    background: var(--surface-alt);
+    color: var(--ink-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 7px 0;
+  }
+
+  .cal-cell {
+    background: var(--surface);
+    min-height: 96px;
+    padding: 6px 6px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+  }
+
+  .cal-cell:hover { background: var(--surface-alt); }
+  .cal-cell.out { color: var(--ink-faint); }
+  .cal-cell.out .cal-daynum { color: var(--ink-faint); }
+
+  .cal-daynum {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+  }
+
+  .cal-cell.is-today .cal-daynum {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 19px;
+    height: 19px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 700;
+  }
+
+  .cal-chips { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+
+  .cal-chip {
+    font-size: 0.7rem;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    border-radius: 4px;
+    padding: 2px 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cal-chip .t { font-family: "IBM Plex Mono", monospace; opacity: 0.85; }
+
+  .cal-more {
+    font-size: 0.68rem;
+    color: var(--ink-faint);
+    padding: 0 5px;
+  }
+
+  .booking-row {
+    display: grid;
+    grid-template-columns: 110px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 8px;
+    border-radius: 8px;
+  }
+
+  .booking-row:hover { background: var(--surface-alt); }
+
+  .booking-time {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.82rem;
+    color: var(--ink);
+  }
+
+  .booking-time .allday {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-family: "IBM Plex Sans", sans-serif;
+    font-weight: 600;
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+
+  .booking-main { min-width: 0; }
+
+  .booking-dept {
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  .booking-meta {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .booking-purpose {
+    font-size: 0.82rem;
+    color: var(--ink-muted);
+    margin-top: 3px;
+    overflow-wrap: break-word;
+  }
+
+  .cancel-btn {
+    background: none;
+    border: 1px solid var(--border-strong);
+    color: var(--ink-muted);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 0.76rem;
+    cursor: pointer;
+  }
+
+  .cancel-btn:hover { border-color: var(--danger); color: var(--danger-ink); background: var(--danger-soft); }
+
+  .empty-state {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 0.88rem;
+  }
+
+  /* ---------- confirm modal ---------- */
+
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(7, 17, 21, 0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 50;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    max-width: 340px;
+    width: 100%;
+  }
+
+  .modal h3 { font-size: 1rem; margin-bottom: 8px; }
+  .modal p { font-size: 0.86rem; color: var(--ink-muted); margin: 0 0 16px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+  .modal-actions button {
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 7px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+  }
+
+  .btn-ghost { background: none; border: 1px solid var(--border-strong); color: var(--ink); }
+  .btn-danger { background: var(--danger); border: none; color: #2a0d0d; font-weight: 600; }
+
+  footer.note {
+    margin-top: 20px;
+    font-size: 0.76rem;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="shell">
+  <header class="top">
+    <div class="mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" />
+        <rect x="3" y="11" width="18" height="6" rx="1.5" />
+        <circle cx="7.5" cy="17.5" r="1.6" />
+        <circle cx="16.5" cy="17.5" r="1.6" />
+      </svg>
+    </div>
+    <div>
+      <h1>KEBUKE</h1>
+      <p>總部公務車/外出登記</p>
+    </div>
+  </header>
+
+  <div class="module-switch">
+    <button type="button" class="module-btn active" id="module-btn-vehicle">公務車</button>
+    <button type="button" class="module-btn" id="module-btn-outing">外出登記表</button>
+  </div>
+
+  <!-- ===================== 公務車模組 ===================== -->
+  <div class="module-panel" id="module-vehicle">
+    <div class="main-tabs">
+      <button type="button" class="tab-btn active" id="tab-btn-form" data-tab="form">公務車登記</button>
+      <button type="button" class="tab-btn" id="tab-btn-daily" data-tab="daily">公務車日程</button>
+      <button type="button" class="tab-btn" id="tab-btn-calendar" data-tab="calendar">公務車月曆</button>
+    </div>
+
+    <section class="panel view-panel form-view" id="view-form">
+      <div class="panel-head">
+        <h2>公務車登記</h2>
+      </div>
+      <form id="booking-form">
+        <div id="db-banner" class="banner muted show">載入中…</div>
+
+        <div class="field">
+          <label for="f-dept">部門 <span class="req">*</span></label>
+          <select id="f-dept" required>
+            <option value="" disabled selected>請選擇部門</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="f-name">登記人姓名 <span class="req">*</span></label>
+          <input type="text" id="f-name" placeholder="請輸入姓名" required maxlength="30" autocomplete="off">
+        </div>
+
+        <div class="field">
+          <label for="f-date">使用日期 <span class="req">*</span></label>
+          <input type="date" id="f-date" required>
+        </div>
+
+        <div class="field">
+          <label>使用方式 <span class="req">*</span></label>
+          <div class="mode-toggle">
+            <label id="mode-label-slot" class="active">
+              <input type="radio" name="mode" value="slot" checked>指定時段
+            </label>
+            <label id="mode-label-allday">
+              <input type="radio" name="mode" value="allday">整日
+            </label>
+          </div>
+        </div>
+
+        <div class="field" id="time-field">
+          <label>時間區間（每 30 分鐘） <span class="req">*</span></label>
+          <div class="time-row">
+            <select id="f-start"></select>
+            <span class="sep">至</span>
+            <select id="f-end"></select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-purpose">租借目的 <span class="req">*</span></label>
+          <textarea id="f-purpose" placeholder="例：廠商會議／門市稽核／採買物料" required maxlength="200"></textarea>
+        </div>
+
+        <div id="conflict-banner" class="banner error"></div>
+        <div id="success-banner" class="banner ok"></div>
+
+        <button type="submit" class="submit" id="submit-btn">送出登記</button>
+      </form>
+    </section>
+
+    <section class="panel view-panel" id="view-daily" hidden>
+      <div class="panel-head">
+        <h2>公務車日程</h2>
+        <select id="filter-dept-daily" class="dept-filter">
+          <option value="">全部部門</option>
+        </select>
+      </div>
+      <div class="daily-nav">
+        <button type="button" class="nav-btn" id="daily-prev" aria-label="前一天">‹</button>
+        <input type="date" id="daily-date">
+        <button type="button" class="nav-btn" id="daily-next" aria-label="後一天">›</button>
+        <button type="button" class="today-btn" id="daily-today">今天</button>
+      </div>
+      <div class="daily-heading" id="daily-heading"></div>
+      <div class="schedule-body" id="daily-body">
+        <div class="empty-state">載入中…</div>
+      </div>
+    </section>
+
+    <section class="panel view-panel" id="view-calendar" hidden>
+      <div class="panel-head">
+        <h2>公務車月曆</h2>
+        <select id="filter-dept-calendar" class="dept-filter">
+          <option value="">全部部門</option>
+        </select>
+      </div>
+      <div class="cal-nav">
+        <button type="button" class="nav-btn" id="cal-prev" aria-label="上個月">‹</button>
+        <div class="cal-month-label" id="cal-month-label">—</div>
+        <button type="button" class="nav-btn" id="cal-next" aria-label="下個月">›</button>
+        <button type="button" class="today-btn" id="cal-today">今天</button>
+      </div>
+      <div class="cal-scroll">
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================== 外出登記模組 ===================== -->
+  <div class="module-panel" id="module-outing" hidden>
+    <div class="main-tabs">
+      <button type="button" class="tab-btn active" id="tab-btn-outing-form" data-tab="form">外出登記表</button>
+      <button type="button" class="tab-btn" id="tab-btn-outing-daily" data-tab="daily">外出表日程</button>
+      <button type="button" class="tab-btn" id="tab-btn-outing-calendar" data-tab="calendar">外出表月曆</button>
+    </div>
+
+    <section class="panel view-panel form-view" id="view-outing-form">
+      <div class="panel-head">
+        <h2>外出登記表</h2>
+      </div>
+      <form id="outing-form">
+        <div id="o-db-banner" class="banner muted show">載入中…</div>
+
+        <div class="field">
+          <label for="o-dept">部門 <span class="req">*</span></label>
+          <select id="o-dept" required>
+            <option value="" disabled selected>請選擇部門</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="o-name">登記人姓名 <span class="req">*</span></label>
+          <input type="text" id="o-name" placeholder="請輸入姓名" required maxlength="30" autocomplete="off">
+        </div>
+
+        <div class="field">
+          <label for="o-date">外出日期 <span class="req">*</span></label>
+          <input type="date" id="o-date" required>
+        </div>
+
+        <div class="field">
+          <label>外出方式 <span class="req">*</span></label>
+          <div class="mode-toggle">
+            <label id="o-mode-label-slot" class="active">
+              <input type="radio" name="o-mode" value="slot" checked>指定時段
+            </label>
+            <label id="o-mode-label-allday">
+              <input type="radio" name="o-mode" value="allday">整日
+            </label>
+          </div>
+        </div>
+
+        <div class="field" id="o-time-field">
+          <label>時間區間（每 30 分鐘） <span class="req">*</span></label>
+          <div class="time-row">
+            <select id="o-start"></select>
+            <span class="sep">至</span>
+            <select id="o-end"></select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="o-location">外出地點 <span class="req">*</span></label>
+          <input type="text" id="o-location" placeholder="例：客戶端／門市／政府機關" required maxlength="60" autocomplete="off">
+        </div>
+
+        <div class="field">
+          <label for="o-purpose">外出事由 <span class="req">*</span></label>
+          <textarea id="o-purpose" placeholder="例：拜訪客戶／參加會議／臨櫃辦理" required maxlength="200"></textarea>
+        </div>
+
+        <div id="o-conflict-banner" class="banner error"></div>
+        <div id="o-success-banner" class="banner ok"></div>
+
+        <button type="submit" class="submit" id="o-submit-btn">送出外出登記</button>
+      </form>
+    </section>
+
+    <section class="panel view-panel" id="view-outing-daily" hidden>
+      <div class="panel-head">
+        <h2>外出表日程</h2>
+        <select id="o-filter-dept-daily" class="dept-filter">
+          <option value="">全部部門</option>
+        </select>
+      </div>
+      <div class="daily-nav">
+        <button type="button" class="nav-btn" id="o-daily-prev" aria-label="前一天">‹</button>
+        <input type="date" id="o-daily-date">
+        <button type="button" class="nav-btn" id="o-daily-next" aria-label="後一天">›</button>
+        <button type="button" class="today-btn" id="o-daily-today">今天</button>
+      </div>
+      <div class="daily-heading" id="o-daily-heading"></div>
+      <div class="schedule-body" id="o-daily-body">
+        <div class="empty-state">載入中…</div>
+      </div>
+    </section>
+
+    <section class="panel view-panel" id="view-outing-calendar" hidden>
+      <div class="panel-head">
+        <h2>外出表月曆</h2>
+        <select id="o-filter-dept-calendar" class="dept-filter">
+          <option value="">全部部門</option>
+        </select>
+      </div>
+      <div class="cal-nav">
+        <button type="button" class="nav-btn" id="o-cal-prev" aria-label="上個月">‹</button>
+        <div class="cal-month-label" id="o-cal-month-label">—</div>
+        <button type="button" class="nav-btn" id="o-cal-next" aria-label="下個月">›</button>
+        <button type="button" class="today-btn" id="o-cal-today">今天</button>
+      </div>
+      <div class="cal-scroll">
+        <div class="cal-grid" id="o-cal-grid"></div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="note">辦公室僅有一台公務車，系統會自動阻擋時段重複的租用登記；外出登記表則是各自記錄外出情形，同一位登記人若時段重疊也會被系統阻擋。如需取消登記，請於日程列表點選「取消」。</footer>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3>取消這筆登記？</h3>
+    <p id="modal-detail"></p>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="modal-cancel">返回</button>
+      <button class="btn-danger" id="modal-confirm">確認取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  function byId(id) { return document.getElementById(id); }
+
+  var DEPARTMENTS = [
+    "品牌部(行銷/設計)", "研發部", "營運部", "人資部", "資訊部",
+    "法務部", "食安部", "資材部", "財務部", "總經理室"
+  ];
+
+  var DEPT_SHORT = {
+    "品牌部(行銷/設計)": "品牌部"
+  };
+
+  function shortDept(name) { return DEPT_SHORT[name] || name; }
+
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+
+  var TIMES = [];
+  for (var h = 7; h <= 22; h++) {
+    [0, 30].forEach(function (m) {
+      if (h === 22 && m === 30) return;
+      TIMES.push(pad(h) + ":" + pad(m));
+    });
+  }
+
+  function todayStr() {
+    var d = new Date();
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+
+  function fmtDateHeading(dateStr) {
+    var parts = dateStr.split("-").map(Number);
+    var d = new Date(parts[0], parts[1] - 1, parts[2]);
+    var dow = ["日", "一", "二", "三", "四", "五", "六"][d.getDay()];
+    return { label: (parts[1]) + "/" + (parts[2]), dow: "週" + dow };
+  }
+
+  function shiftDate(dateStr, delta) {
+    var parts = dateStr.split("-").map(Number);
+    var d = new Date(parts[0], parts[1] - 1, parts[2] + delta);
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+
+  function overlaps(a, b) {
+    if (a.date !== b.date) return false;
+    if (a.allDay || b.allDay) return true;
+    return a.startTime < b.endTime && b.startTime < a.endTime;
+  }
+
+  function fillStartOptions(sel) {
+    sel.innerHTML = "";
+    TIMES.slice(0, -1).forEach(function (t) {
+      var o = document.createElement("option");
+      o.value = t; o.textContent = t;
+      sel.appendChild(o);
+    });
+  }
+
+  function fillEndOptions(startSel, endSel) {
+    var startIdx = TIMES.indexOf(startSel.value);
+    endSel.innerHTML = "";
+    TIMES.slice(startIdx + 1).forEach(function (t) {
+      var o = document.createElement("option");
+      o.value = t; o.textContent = t;
+      endSel.appendChild(o);
+    });
+  }
+
+  function currentMode(cfg) {
+    return document.querySelector('input[name="' + cfg.modeName + '"]:checked').value;
+  }
+
+  function updateModeUI(cfg) {
+    var mode = currentMode(cfg);
+    cfg.el.modeLabelSlot.classList.toggle("active", mode === "slot");
+    cfg.el.modeLabelAllday.classList.toggle("active", mode === "allday");
+    cfg.el.timeField.style.display = mode === "slot" ? "flex" : "none";
+  }
+
+  // ---------- cancel modal (shared across modules) ----------
+
+  var modalOverlay = byId("modal-overlay");
+  var modalDetail = byId("modal-detail");
+  var pendingCancel = null;
+
+  function openCancelModal(cfg, b) {
+    pendingCancel = { col: cfg.col, id: b.id };
+    var when = b.allDay ? (b.date + "（整日）") : (b.date + " " + b.startTime + "–" + b.endTime);
+    var extra = (cfg.hasLocation && b.location) ? "・" + b.location : "";
+    modalDetail.textContent = b.department + " · " + b.requester + extra + " · " + when;
+    modalOverlay.classList.add("show");
+  }
+
+  byId("modal-cancel").addEventListener("click", function () {
+    pendingCancel = null;
+    modalOverlay.classList.remove("show");
+  });
+
+  byId("modal-confirm").addEventListener("click", function () {
+    if (!pendingCancel || !pendingCancel.col) return;
+    var toDelete = pendingCancel;
+    modalOverlay.classList.remove("show");
+    pendingCancel = null;
+    toDelete.col.doc(toDelete.id).delete().catch(function () {
+      /* best-effort; live subscription will reconcile the view */
+    });
+  });
+
+  // ---------- row builder ----------
+
+  function buildRow(cfg, b) {
+    var row = document.createElement("div");
+    row.className = "booking-row";
+
+    var timeCol = document.createElement("div");
+    timeCol.className = "booking-time";
+    if (b.allDay) {
+      var tag = document.createElement("span");
+      tag.className = "allday";
+      tag.textContent = "整日";
+      timeCol.appendChild(tag);
+    } else {
+      timeCol.textContent = b.startTime + "–" + b.endTime;
+    }
+
+    var mainCol = document.createElement("div");
+    mainCol.className = "booking-main";
+    var deptEl = document.createElement("div");
+    deptEl.className = "booking-dept";
+    deptEl.textContent = b.department;
+    var metaEl = document.createElement("div");
+    metaEl.className = "booking-meta";
+    metaEl.textContent = "登記人：" + b.requester + ((cfg.hasLocation && b.location) ? "　·　地點：" + b.location : "");
+    var purposeEl = document.createElement("div");
+    purposeEl.className = "booking-purpose";
+    purposeEl.textContent = b.purpose;
+    mainCol.appendChild(deptEl);
+    mainCol.appendChild(metaEl);
+    mainCol.appendChild(purposeEl);
+
+    var actionCol = document.createElement("div");
+    var cancelBtn = document.createElement("button");
+    cancelBtn.className = "cancel-btn";
+    cancelBtn.type = "button";
+    cancelBtn.textContent = "取消";
+    cancelBtn.addEventListener("click", function () { openCancelModal(cfg, b); });
+    actionCol.appendChild(cancelBtn);
+
+    row.appendChild(timeCol);
+    row.appendChild(mainCol);
+    row.appendChild(actionCol);
+    return row;
+  }
+
+  // ---------- render ----------
+
+  function renderDaily(cfg) {
+    var body = cfg.el.dailyBody;
+    var headingEl = cfg.el.dailyHeading;
+    var deptFilter = cfg.el.filterDeptDaily.value;
+    var date = cfg.selectedDailyDate;
+    var today = todayStr();
+
+    var list = cfg.items.filter(function (b) {
+      if (b.date !== date) return false;
+      if (deptFilter && b.department !== deptFilter) return false;
+      return true;
+    });
+
+    var info = fmtDateHeading(date);
+    headingEl.textContent = info.label + "（" + info.dow + "）" + (date === today ? " · 今天" : "") + " · " + list.length + " 筆登記";
+
+    body.innerHTML = "";
+    if (list.length === 0) {
+      var empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = cfg.emptyDailyText;
+      body.appendChild(empty);
+      return;
+    }
+
+    list.forEach(function (b) { body.appendChild(buildRow(cfg, b)); });
+  }
+
+  function renderCalendar(cfg) {
+    var grid = cfg.el.calGrid;
+    var monthLabel = cfg.el.calMonthLabel;
+    var deptFilter = cfg.el.filterDeptCalendar.value;
+    var y = cfg.calCursor.y, m = cfg.calCursor.m;
+    var today = todayStr();
+
+    monthLabel.textContent = y + "年" + (m + 1) + "月";
+
+    grid.innerHTML = "";
+    ["日", "一", "二", "三", "四", "五", "六"].forEach(function (d) {
+      var el = document.createElement("div");
+      el.className = "cal-dow";
+      el.textContent = d;
+      grid.appendChild(el);
+    });
+
+    var startOffset = new Date(y, m, 1).getDay();
+    var daysInMonth = new Date(y, m + 1, 0).getDate();
+    var totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+
+    for (var i = 0; i < totalCells; i++) {
+      var dayNum = i - startOffset + 1;
+      var cellDate = new Date(y, m, dayNum);
+      var out = cellDate.getMonth() !== m;
+      var dateStr = cellDate.getFullYear() + "-" + pad(cellDate.getMonth() + 1) + "-" + pad(cellDate.getDate());
+
+      var cell = document.createElement("div");
+      cell.className = "cal-cell" + (out ? " out" : "") + (dateStr === today ? " is-today" : "");
+      cell.setAttribute("data-date", dateStr);
+      cell.addEventListener("click", function () {
+        cfg.selectedDailyDate = this.getAttribute("data-date");
+        cfg.el.dailyDate.value = cfg.selectedDailyDate;
+        switchSubTab(cfg, "daily");
+      });
+
+      var numEl = document.createElement("div");
+      numEl.className = "cal-daynum";
+      numEl.textContent = cellDate.getDate();
+      cell.appendChild(numEl);
+
+      var chipsWrap = document.createElement("div");
+      chipsWrap.className = "cal-chips";
+
+      var dayBookings = cfg.items.filter(function (b) {
+        if (b.date !== dateStr) return false;
+        if (deptFilter && b.department !== deptFilter) return false;
+        return true;
+      });
+
+      var shown = dayBookings.slice(0, 3);
+      shown.forEach(function (b) {
+        var chip = document.createElement("div");
+        chip.className = "cal-chip";
+        chip.title = b.department + " · " + (b.allDay ? "整日" : (b.startTime + "–" + b.endTime)) + " · " + b.requester + ((cfg.hasLocation && b.location) ? "・" + b.location : "");
+        var tSpan = document.createElement("span");
+        tSpan.className = "t";
+        tSpan.textContent = b.allDay ? "整日" : b.startTime;
+        chip.appendChild(tSpan);
+        chip.appendChild(document.createTextNode(" " + shortDept(b.department)));
+        chipsWrap.appendChild(chip);
+      });
+
+      if (dayBookings.length > shown.length) {
+        var more = document.createElement("div");
+        more.className = "cal-more";
+        more.textContent = "+" + (dayBookings.length - shown.length) + " 筆";
+        chipsWrap.appendChild(more);
+      }
+
+      cell.appendChild(chipsWrap);
+      grid.appendChild(cell);
+    }
+  }
+
+  function renderAll(cfg) {
+    renderDaily(cfg);
+    renderCalendar(cfg);
+  }
+
+  // ---------- sub-tab switching (form / daily / calendar within one module) ----------
+
+  function switchSubTab(cfg, tab) {
+    cfg.activeTab = tab;
+    cfg.el.tabBtnForm.classList.toggle("active", tab === "form");
+    cfg.el.tabBtnDaily.classList.toggle("active", tab === "daily");
+    cfg.el.tabBtnCalendar.classList.toggle("active", tab === "calendar");
+    cfg.el.viewForm.hidden = tab !== "form";
+    cfg.el.viewDaily.hidden = tab !== "daily";
+    cfg.el.viewCalendar.hidden = tab !== "calendar";
+  }
+
+  // ---------- form submit ----------
+
+  function attachSubmit(cfg) {
+    cfg.el.form.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      cfg.el.conflictBanner.classList.remove("show");
+      cfg.el.successBanner.classList.remove("show");
+
+      if (!cfg.col) {
+        cfg.el.conflictBanner.textContent = "共用登記功能目前無法使用，請稍後再試。";
+        cfg.el.conflictBanner.classList.add("show");
+        return;
+      }
+
+      var department = cfg.el.deptSelect.value;
+      var requester = cfg.el.nameInput.value.trim();
+      var date = cfg.el.dateInput.value;
+      var location = cfg.hasLocation ? cfg.el.locationInput.value.trim() : null;
+      var purpose = cfg.el.purposeInput.value.trim();
+      var mode = currentMode(cfg);
+      var allDay = mode === "allday";
+      var startTime = allDay ? null : cfg.el.startSelect.value;
+      var endTime = allDay ? null : cfg.el.endSelect.value;
+
+      var missingRequired = !department || !requester || !date || !purpose || (cfg.hasLocation && !location);
+      if (missingRequired) {
+        cfg.el.conflictBanner.textContent = "請完整填寫所有必填欄位。";
+        cfg.el.conflictBanner.classList.add("show");
+        return;
+      }
+      if (!allDay && !(startTime < endTime)) {
+        cfg.el.conflictBanner.textContent = "結束時間必須晚於開始時間。";
+        cfg.el.conflictBanner.classList.add("show");
+        return;
+      }
+
+      var candidate = { date: date, allDay: allDay, startTime: startTime, endTime: endTime };
+
+      cfg.el.submitBtn.disabled = true;
+      cfg.el.submitBtn.textContent = "送出中…";
+
+      var query = cfg.col.where("date", "==", date);
+      if (cfg.conflictScope === "requester") {
+        query = query.where("requester", "==", requester);
+      }
+
+      query.get().then(function (snap) {
+        var conflict = null;
+        snap.docs.forEach(function (doc) {
+          var data = doc.data();
+          if (overlaps(candidate, data)) conflict = data;
+        });
+
+        if (conflict) {
+          var when = conflict.allDay ? "整日" : (conflict.startTime + "–" + conflict.endTime);
+          if (cfg.conflictScope === "requester") {
+            cfg.el.conflictBanner.textContent = "登記失敗：您（" + requester + "）在該時段已有一筆外出登記（" + conflict.department + ((conflict.location) ? "・" + conflict.location : "") + "，" + when + "），請確認時間是否重複。";
+          } else {
+            cfg.el.conflictBanner.textContent = "登記失敗：該時段已被「" + conflict.department + "」（" + conflict.requester + "）登記使用（" + when + "），請另選時間。";
+          }
+          cfg.el.conflictBanner.classList.add("show");
+          cfg.el.submitBtn.disabled = false;
+          cfg.el.submitBtn.textContent = cfg.submitLabel;
+          return;
+        }
+
+        var sortKey = date + "_" + (allDay ? "00:00" : startTime);
+        var payload = {
+          department: department,
+          requester: requester,
+          date: date,
+          allDay: allDay,
+          startTime: startTime,
+          endTime: endTime,
+          purpose: purpose,
+          sortKey: sortKey,
+          createdAt: new Date().toISOString()
+        };
+        if (cfg.hasLocation) payload.location = location;
+
+        return cfg.col.add(payload).then(function () {
+          cfg.el.successBanner.textContent = "登記成功！";
+          cfg.el.successBanner.classList.add("show");
+          cfg.el.nameInput.value = "";
+          cfg.el.purposeInput.value = "";
+          if (cfg.hasLocation) cfg.el.locationInput.value = "";
+          cfg.el.deptSelect.value = "";
+          cfg.el.submitBtn.disabled = false;
+          cfg.el.submitBtn.textContent = cfg.submitLabel;
+        });
+      }).catch(function (err) {
+        cfg.el.conflictBanner.textContent = "發生錯誤，請稍後再試。（" + (err && err.code ? err.code : "unknown") + "）";
+        cfg.el.conflictBanner.classList.add("show");
+        cfg.el.submitBtn.disabled = false;
+        cfg.el.submitBtn.textContent = cfg.submitLabel;
+      });
+    });
+  }
+
+  // ---------- module setup ----------
+
+  function setupFormBasics(cfg) {
+    DEPARTMENTS.forEach(function (d) {
+      [cfg.el.deptSelect, cfg.el.filterDeptDaily, cfg.el.filterDeptCalendar].forEach(function (sel) {
+        var o = document.createElement("option");
+        o.value = d; o.textContent = d;
+        sel.appendChild(o);
+      });
+    });
+
+    fillStartOptions(cfg.el.startSelect);
+    fillEndOptions(cfg.el.startSelect, cfg.el.endSelect);
+    cfg.el.startSelect.addEventListener("change", function () { fillEndOptions(cfg.el.startSelect, cfg.el.endSelect); });
+
+    cfg.el.dateInput.min = todayStr();
+    cfg.el.dateInput.value = todayStr();
+
+    document.querySelectorAll('input[name="' + cfg.modeName + '"]').forEach(function (r) {
+      r.addEventListener("change", function () { updateModeUI(cfg); });
+    });
+    updateModeUI(cfg);
+  }
+
+  function wireNav(cfg) {
+    cfg.el.tabBtnForm.addEventListener("click", function () { switchSubTab(cfg, "form"); });
+    cfg.el.tabBtnDaily.addEventListener("click", function () { switchSubTab(cfg, "daily"); });
+    cfg.el.tabBtnCalendar.addEventListener("click", function () { switchSubTab(cfg, "calendar"); });
+
+    cfg.el.dailyDate.value = cfg.selectedDailyDate;
+    cfg.el.dailyDate.addEventListener("change", function () {
+      cfg.selectedDailyDate = cfg.el.dailyDate.value || todayStr();
+      renderDaily(cfg);
+    });
+
+    cfg.el.dailyPrev.addEventListener("click", function () {
+      cfg.selectedDailyDate = shiftDate(cfg.selectedDailyDate, -1);
+      cfg.el.dailyDate.value = cfg.selectedDailyDate;
+      renderDaily(cfg);
+    });
+    cfg.el.dailyNext.addEventListener("click", function () {
+      cfg.selectedDailyDate = shiftDate(cfg.selectedDailyDate, 1);
+      cfg.el.dailyDate.value = cfg.selectedDailyDate;
+      renderDaily(cfg);
+    });
+    cfg.el.dailyToday.addEventListener("click", function () {
+      cfg.selectedDailyDate = todayStr();
+      cfg.el.dailyDate.value = cfg.selectedDailyDate;
+      renderDaily(cfg);
+    });
+
+    cfg.el.calPrev.addEventListener("click", function () {
+      cfg.calCursor.m -= 1;
+      if (cfg.calCursor.m < 0) { cfg.calCursor.m = 11; cfg.calCursor.y -= 1; }
+      renderCalendar(cfg);
+    });
+    cfg.el.calNext.addEventListener("click", function () {
+      cfg.calCursor.m += 1;
+      if (cfg.calCursor.m > 11) { cfg.calCursor.m = 0; cfg.calCursor.y += 1; }
+      renderCalendar(cfg);
+    });
+    cfg.el.calToday.addEventListener("click", function () {
+      var now = new Date();
+      cfg.calCursor.y = now.getFullYear();
+      cfg.calCursor.m = now.getMonth();
+      renderCalendar(cfg);
+    });
+
+    cfg.el.filterDeptDaily.addEventListener("change", function () { renderDaily(cfg); });
+    cfg.el.filterDeptCalendar.addEventListener("change", function () { renderCalendar(cfg); });
+  }
+
+  function createModule(cfg) {
+    cfg.el = {};
+    Object.keys(cfg.ids).forEach(function (key) { cfg.el[key] = byId(cfg.ids[key]); });
+    cfg.col = null;
+    cfg.items = [];
+    cfg.activeTab = "form";
+    cfg.selectedDailyDate = todayStr();
+    cfg.calCursor = (function () {
+      var n = new Date();
+      return { y: n.getFullYear(), m: n.getMonth() };
+    })();
+
+    setupFormBasics(cfg);
+    wireNav(cfg);
+    attachSubmit(cfg);
+
+    return cfg;
+  }
+
+  var vehicleCfg = createModule({
+    key: "vehicle",
+    collectionName: "bookings",
+    conflictScope: "resource",
+    hasLocation: false,
+    modeName: "mode",
+    submitLabel: "送出登記",
+    emptyDailyText: "當日尚無登記",
+    ids: {
+      deptSelect: "f-dept",
+      nameInput: "f-name",
+      dateInput: "f-date",
+      modeLabelSlot: "mode-label-slot",
+      modeLabelAllday: "mode-label-allday",
+      timeField: "time-field",
+      startSelect: "f-start",
+      endSelect: "f-end",
+      purposeInput: "f-purpose",
+      form: "booking-form",
+      dbBanner: "db-banner",
+      submitBtn: "submit-btn",
+      conflictBanner: "conflict-banner",
+      successBanner: "success-banner",
+      filterDeptDaily: "filter-dept-daily",
+      filterDeptCalendar: "filter-dept-calendar",
+      dailyDate: "daily-date",
+      dailyPrev: "daily-prev",
+      dailyNext: "daily-next",
+      dailyToday: "daily-today",
+      dailyHeading: "daily-heading",
+      dailyBody: "daily-body",
+      calPrev: "cal-prev",
+      calNext: "cal-next",
+      calToday: "cal-today",
+      calMonthLabel: "cal-month-label",
+      calGrid: "cal-grid",
+      tabBtnForm: "tab-btn-form",
+      tabBtnDaily: "tab-btn-daily",
+      tabBtnCalendar: "tab-btn-calendar",
+      viewForm: "view-form",
+      viewDaily: "view-daily",
+      viewCalendar: "view-calendar"
+    }
+  });
+
+  var outingCfg = createModule({
+    key: "outing",
+    collectionName: "outings",
+    conflictScope: "requester",
+    hasLocation: true,
+    modeName: "o-mode",
+    submitLabel: "送出外出登記",
+    emptyDailyText: "當日尚無外出登記",
+    ids: {
+      deptSelect: "o-dept",
+      nameInput: "o-name",
+      dateInput: "o-date",
+      modeLabelSlot: "o-mode-label-slot",
+      modeLabelAllday: "o-mode-label-allday",
+      timeField: "o-time-field",
+      startSelect: "o-start",
+      endSelect: "o-end",
+      locationInput: "o-location",
+      purposeInput: "o-purpose",
+      form: "outing-form",
+      dbBanner: "o-db-banner",
+      submitBtn: "o-submit-btn",
+      conflictBanner: "o-conflict-banner",
+      successBanner: "o-success-banner",
+      filterDeptDaily: "o-filter-dept-daily",
+      filterDeptCalendar: "o-filter-dept-calendar",
+      dailyDate: "o-daily-date",
+      dailyPrev: "o-daily-prev",
+      dailyNext: "o-daily-next",
+      dailyToday: "o-daily-today",
+      dailyHeading: "o-daily-heading",
+      dailyBody: "o-daily-body",
+      calPrev: "o-cal-prev",
+      calNext: "o-cal-next",
+      calToday: "o-cal-today",
+      calMonthLabel: "o-cal-month-label",
+      calGrid: "o-cal-grid",
+      tabBtnForm: "tab-btn-outing-form",
+      tabBtnDaily: "tab-btn-outing-daily",
+      tabBtnCalendar: "tab-btn-outing-calendar",
+      viewForm: "view-outing-form",
+      viewDaily: "view-outing-daily",
+      viewCalendar: "view-outing-calendar"
+    }
+  });
+
+  var MODULES = [vehicleCfg, outingCfg];
+
+  // ---------- module switching ----------
+
+  function switchModule(name) {
+    byId("module-btn-vehicle").classList.toggle("active", name === "vehicle");
+    byId("module-btn-outing").classList.toggle("active", name === "outing");
+    byId("module-vehicle").hidden = name !== "vehicle";
+    byId("module-outing").hidden = name !== "outing";
+  }
+
+  byId("module-btn-vehicle").addEventListener("click", function () { switchModule("vehicle"); });
+  byId("module-btn-outing").addEventListener("click", function () { switchModule("outing"); });
+
+  // ---------- init ----------
+
+  async function init() {
+    var db = null;
+    try {
+      db = await claude.use("db");
+    } catch (e) {
+      db = null;
+    }
+
+    if (!db) {
+      MODULES.forEach(function (cfg) {
+        cfg.el.dbBanner.className = "banner show error";
+        cfg.el.dbBanner.textContent = "無法連線至共用登記資料庫，暫時無法送出新登記。請重新整理頁面再試一次。";
+        cfg.el.submitBtn.disabled = true;
+        cfg.el.dailyBody.innerHTML = '<div class="empty-state">共用資料無法載入</div>';
+      });
+      return;
+    }
+
+    MODULES.forEach(function (cfg) {
+      cfg.el.dbBanner.classList.remove("show");
+      cfg.col = db.collection(cfg.collectionName);
+
+      cfg.col.orderBy("sortKey", "asc").limit(500).onSnapshot(function (snap) {
+        cfg.items = snap.docs.map(function (d) {
+          var data = d.data() || {};
+          data.id = d.id;
+          return data;
+        });
+        renderAll(cfg);
+      }, function (err) {
+        cfg.el.dbBanner.className = "banner show error";
+        cfg.el.dbBanner.textContent = "即時同步中斷（" + err.code + "），部分登記可能未顯示最新狀態。";
+      });
+    });
+  }
+
+  init();
+})();
+</script>
