@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS_Beta V1</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", Arial, sans-serif;
+            background-color: #1e293b;
+            user-select: none;
+        }
+
+        /* Legacy POS Specific Colors */
+        .bg-pos-header { background-color: #003140; }
+        .bg-pos-subheader { background-color: #798a96; }
+        .bg-pos-subbar { background-color: #3b5062; }
+        .bg-pos-red { background-color: #7a2332; }
+        .bg-pos-red:hover { background-color: #932a3c; }
+        .bg-pos-item { background-color: #e2be7e; }
+        .bg-pos-item:hover { background-color: #f1cf90; }
+        .bg-pos-btn { background-color: #d8d4cb; }
+        .bg-pos-btn:hover { background-color: #e8e4db; }
+        .bg-pos-tab { background-color: #004d61; }
+        .bg-pos-tab-active { background-color: #7a2332; }
+        .bg-pos-ice { background-color: #dedcd7; }
+        .bg-pos-ice:hover { background-color: #eeeeee; }
+        .bg-pos-selected { background-color: #ffb8c6 !important; }
+
+        /* Crisp borders mimicking classic Windows Win32 / POS terminal software */
+        .pos-border {
+            border: 1px solid #737373;
+        }
+        .pos-border-thin {
+            border: 1px solid #999999;
+        }
+        .pos-button-shadow {
+            box-shadow: inset -1px -1px 0px rgba(0,0,0,0.3), inset 1px 1px 0px rgba(255,255,255,0.7);
+        }
+
+        /* Discussion Pin Animation */
+        @keyframes pulse-pin {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .pulse-annotation {
+            animation: pulse-pin 2s infinite;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="p-2 md:p-4 text-gray-900 min-h-screen flex flex-col items-center justify-center">
+
+    <!-- Top Toolbar (Reset Button Only) -->
+    <header class="w-full max-w-7xl mb-3 flex items-center justify-end">
+        <button onclick="resetSystem()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded text-sm transition flex items-center gap-1 shadow">
+            <i class="fa-solid fa-rotate-right"></i> 重置模擬
+        </button>
+    </header>
+
+    <!-- Main POS Interface Container (Scaled 4:3 Ratio feel) -->
+    <div class="w-full max-w-7xl bg-gray-200 border-2 border-gray-600 shadow-2xl rounded-sm overflow-hidden text-sm relative">
+
+        <!-- 1. Topmost Status Bar -->
+        <div class="bg-pos-header text-white px-3 py-1.5 flex items-center justify-between text-xs font-mono font-bold tracking-wider relative">
+            <div class="flex items-center gap-4">
+                <span>TEST</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-amber-300">OC未接單:0</span>
+                <span class="flex items-center gap-1 text-emerald-400">
+                    <i class="fa-solid fa-paperclip"></i> 已連線
+                </span>
+            </div>
+
+            <!-- Annotation Pin 1 -->
+            <div class="annotation-pin hidden absolute top-1 right-1/3 z-30" data-pin="1">
+                <button onclick="showPinDetail(1)" class="w-7 h-7 bg-red-600 text-white font-extrabold rounded-full pulse-annotation border-2 border-white shadow-lg flex items-center justify-center text-xs">
+                    1
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. Sub-header Order Info Bar -->
+        <div class="bg-gray-300 p-1 border-b border-gray-400 grid grid-cols-12 gap-1 text-xs items-center">
+            <div class="col-span-3 flex border border-gray-500 bg-white">
+                <span class="bg-orange-200 px-2 py-1 font-bold border-r border-gray-400">發票</span>
+                <input type="text" value="AA00000014" readonly class="w-full text-blue-800 font-mono font-bold px-1.5 py-1 text-center bg-transparent">
+                <span class="bg-red-700 text-white px-2 py-1 font-bold">0</span>
+            </div>
+            <div class="col-span-2 flex border border-gray-500 bg-white">
+                <span class="bg-orange-200 px-2 py-1 font-bold border-r border-gray-400">單號</span>
+                <input type="text" value="現場1" readonly class="w-full text-center font-bold px-1 py-1">
+            </div>
+            <div class="col-span-5 flex border border-gray-500 bg-white text-center font-bold divide-x divide-gray-400 overflow-x-auto">
+                <span class="px-2 py-1 bg-amber-100 flex-1">2026/9/23 15:00 週三</span>
+                <span class="px-2 py-1 flex-1">2026/09/23</span>
+                <span class="px-2 py-1 flex-1">AllDay</span>
+                <span class="px-2 py-1 bg-gray-100">1</span>
+            </div>
+            <div class="col-span-2 text-right">
+                <button class="bg-pos-btn font-bold border border-gray-500 px-3 py-1 w-full text-center hover:bg-gray-100">收銀</button>
+            </div>
+        </div>
+
+        <!-- 3. Current Selected Item & Numeric Summary Bar -->
+        <div class="grid grid-cols-12 gap-1 p-1 bg-gray-200 text-xs border-b border-gray-400">
+            <div class="col-span-8 grid grid-cols-3 gap-1">
+                <div class="flex border border-gray-400 bg-white">
+                    <span class="bg-orange-200 px-2 py-1 font-bold border-r border-gray-400">杯數</span>
+                    <span id="total-cups" class="w-full text-right px-2 py-1 font-bold text-lg">0</span>
+                </div>
+                <div class="flex border border-gray-400 bg-white">
+                    <span class="bg-orange-200 px-2 py-1 font-bold border-r border-gray-400">折扣</span>
+                    <span id="total-discount" class="w-full text-right px-2 py-1 font-bold text-lg">0</span>
+                </div>
+                <div class="flex border border-gray-400 bg-white">
+                    <span class="bg-orange-200 px-2 py-1 font-bold border-r border-gray-400">金額</span>
+                    <span id="total-amount" class="w-full text-right px-2 py-1 font-bold text-lg text-red-700">0</span>
+                </div>
+            </div>
+            <div class="col-span-4 flex border border-gray-400 bg-white">
+                <span class="bg-gray-100 px-2 py-1 font-bold border-r border-gray-400 text-gray-700 flex items-center">平均杯價:</span>
+                <span id="avg-price" class="w-full text-right px-2 py-1 font-bold text-base flex items-center justify-end">0</span>
+            </div>
+        </div>
+
+        <!-- 4. MAIN BODY SPLIT (Left Cart + Keypad | Right Items + Customizers) -->
+        <div class="grid grid-cols-12 gap-1 p-1 bg-gray-400 min-h-[520px]">
+
+            <!-- LEFT COLUMN: Order List Table & Functional Keypad -->
+            <div class="col-span-5 flex flex-col gap-1 relative">
+
+                <!-- Annotation Pin 2 -->
+                <div class="annotation-pin hidden absolute -top-2 -left-2 z-30" data-pin="2">
+                    <button onclick="showPinDetail(2)" class="w-7 h-7 bg-red-600 text-white font-extrabold rounded-full pulse-annotation border-2 border-white shadow-lg flex items-center justify-center text-xs">
+                        2
+                    </button>
+                </div>
+
+                <!-- Active Item Highlight Notice -->
+                <div class="bg-white border border-gray-600 px-2 py-1 text-xs font-bold text-slate-800 truncate h-7 flex items-center">
+                    目前聚焦: <span id="active-item-text" class="text-blue-700 ml-1 font-extrabold">請點擊右側品項點餐</span>
+                </div>
+
+                <!-- Order List Table -->
+                <div class="bg-white border border-gray-600 flex-1 overflow-y-auto max-h-[260px] pos-border">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-pos-red text-white text-xs sticky top-0 font-bold border-b border-gray-600">
+                            <tr>
+                                <th class="p-1.5 w-1/2 border-r border-red-900">項目名稱</th>
+                                <th class="p-1.5 text-center border-r border-red-900">數量</th>
+                                <th class="p-1.5 text-right border-r border-red-900">金額</th>
+                                <th class="p-1.5 text-center">折扣</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart-tbody" class="divide-y divide-gray-300 font-medium text-xs">
+                            <!-- Dynamic Cart Items rendered via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Left Bottom Keypad Matrix -->
+                <div class="grid grid-cols-4 gap-1 text-xs font-bold relative">
+
+                    <!-- Annotation Pin 3 -->
+                    <div class="annotation-pin hidden absolute bottom-10 left-1 z-30" data-pin="3">
+                        <button onclick="showPinDetail(3)" class="w-7 h-7 bg-red-600 text-white font-extrabold rounded-full pulse-annotation border-2 border-white shadow-lg flex items-center justify-center text-xs">
+                            3
+                        </button>
+                    </div>
+
+                    <!-- Row 1 -->
+                    <button onclick="dummyAction('停賣設定')" class="bg-pos-btn p-2 border border-gray-500 pos-button-shadow active:bg-gray-400">停賣設定</button>
+                    <button onclick="dummyAction('線上點')" class="bg-pos-btn p-2 border border-gray-500 pos-button-shadow active:bg-gray-400">線上點</button>
+                    <button onclick="dummyAction('會員')" class="bg-pos-btn p-2 border border-gray-500 pos-button-shadow active:bg-gray-400">會員</button>
+                    <button onclick="dummyAction('客戶資訊')" class="bg-pos-btn p-2 border border-gray-500 pos-button-shadow active:bg-gray-400">客戶資訊</button>
+
+                    <!-- Row 2 -->
+                    <button onclick="dummyAction('印貼紙')" class="bg-pos-btn p-2 border border-gray-500 pos-button-shadow active:bg-gray-400">印貼紙</button>
+                    <button onclick="dummyAction('未買')" class="bg-pos-btn p-2 border border-gray-500 pos-button-shadow active:bg-gray-400">未買</button>
+                    <button onclick="dummyAction('更改數量')" class="bg-pos-btn p-2 border border-gray-500 pos-button-shadow active:bg-gray-400">更改數量</button>
+                    <button onclick="changeQty(1)" class="bg-pos-btn p-2 border border-gray-500 font-extrabold text-lg pos-button-shadow hover:bg-gray-100 active:bg-gray-300">+</button>
+
+                    <!-- Row 3 -->
+                    <button onclick="dummyAction('顧客聯')" class="bg-pos-btn p-2 border border-gray-500 pos-button-shadow active:bg-gray-400">顧客聯</button>
+                    <button onclick="dummyAction('回單')" class="bg-pos-btn p-2 border border-gray-500 pos-button-shadow active:bg-gray-400">回單</button>
+                    <button onclick="clearCart()" class="bg-pos-btn p-2 border border-gray-500 pos-button-shadow hover:bg-red-200 text-red-900 active:bg-red-300">全單取消</button>
+                    <button onclick="changeQty(-1)" class="bg-pos-btn p-2 border border-gray-500 font-extrabold text-lg pos-button-shadow hover:bg-gray-100 active:bg-gray-300">-</button>
+
+                    <!-- Row 4 & 5 (Combined Checkout button spanning 2 rows on right) -->
+                    <button onclick="dummyAction('交班')" class="bg-pos-btn p-2 border border-gray-500 pos-button-shadow active:bg-gray-400">交班</button>
+                    <button onclick="dummyAction('點餐機')" class="bg-pos-btn p-2 border border-gray-500 pos-button-shadow active:bg-gray-400">點餐機</button>
+                    <button onclick="dummyAction('外送平台')" class="bg-pos-btn p-2 border border-gray-500 pos-button-shadow active:bg-gray-400">外送平台</button>
+
+                    <!-- Checkout Button (Tall Dark Red) -->
+                    <button onclick="checkout()" class="row-span-2 bg-pos-red text-white p-2 border border-gray-700 font-bold text-base pos-button-shadow hover:opacity-90 active:scale-95 flex items-center justify-center tracking-widest shadow-md">
+                        結帳
+                    </button>
+
+                    <!-- Row 5 Left Part -->
+                    <button onclick="dummyAction('關閉系統')" class="bg-pos-red text-white p-2 border border-gray-700 font-bold pos-button-shadow hover:bg-red-900">關閉</button>
+                    <button onclick="dummyAction('折扣')" class="bg-pos-btn p-2 border border-gray-500 pos-button-shadow active:bg-gray-400">折扣</button>
+                    <button onclick="dummyAction('錢櫃')" class="bg-pos-btn p-2 border border-gray-500 pos-button-shadow active:bg-gray-400">錢櫃</button>
+
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Category Tabs + Product Buttons Grid + Ice/Sugar Customizers -->
+            <div class="col-span-7 flex flex-col gap-1">
+
+                <!-- 1. Category Navigation Bar -->
+                <div class="flex items-center gap-1 bg-pos-header p-1 border border-gray-600 text-white font-bold text-xs">
+                    <button class="category-tab bg-pos-tab-active px-6 py-2 border border-gray-400 font-bold text-sm">紅茶</button>
+                    <div class="flex-1"></div>
+                    <button class="bg-pos-red px-3 py-2 border border-gray-400 cursor-not-allowed opacity-60">&lt;&lt;</button>
+                    <button class="bg-pos-red px-3 py-2 border border-gray-400 cursor-not-allowed opacity-60">&gt;&gt;</button>
+                </div>
+
+                <!-- 2. Product Items Matrix (5x5 Grid) -->
+                <div class="relative">
+                    <!-- Annotation Pin 4 -->
+                    <div class="annotation-pin hidden absolute top-1 right-2 z-30" data-pin="4">
+                        <button onclick="showPinDetail(4)" class="w-7 h-7 bg-red-600 text-white font-extrabold rounded-full pulse-annotation border-2 border-white shadow-lg flex items-center justify-center text-xs">
+                            4
+                        </button>
+                    </div>
+
+                    <div id="product-grid" class="grid grid-cols-5 gap-1 bg-gray-300 p-1 border border-gray-500 text-xs font-bold text-gray-900">
+                        <!-- Rendered by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- 3. Sub-filter Mode Ribbon -->
+                <div class="grid grid-cols-7 gap-1 text-xs font-bold my-0.5">
+                    <button class="col-span-1 bg-gray-300 border border-gray-500 py-1 text-center">杯</button>
+                    <div class="col-span-4 bg-gray-300 border border-gray-500"></div>
+                    <button class="col-span-1 bg-pos-red text-white border border-gray-600 py-1 text-center">口 味</button>
+                    <button class="col-span-1 bg-gray-300 border border-gray-500 py-1 text-center">備 註</button>
+                </div>
+
+                <!-- 4. Ice & Sugar Customizer Matrix Grid -->
+                <div class="relative flex-1 bg-gray-200 border border-gray-500 p-1">
+
+                    <!-- Annotation Pin 5 -->
+                    <div class="annotation-pin hidden absolute -top-3 left-1/2 z-30" data-pin="5">
+                        <button onclick="showPinDetail(5)" class="w-7 h-7 bg-red-600 text-white font-extrabold rounded-full pulse-annotation border-2 border-white shadow-lg flex items-center justify-center text-xs">
+                            5
+                        </button>
+                    </div>
+
+                    <!-- Ice Grid (Top Section) -->
+                    <div class="grid grid-cols-5 gap-1 text-xs font-bold mb-1">
+                        <button onclick="applyIce('正常冰32')" class="bg-pos-ice border border-gray-400 p-2 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">正常冰32</button>
+                        <button onclick="applyIce('少冰26')" class="bg-pos-ice border border-gray-400 p-2 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">少冰26</button>
+                        <button onclick="applyIce('去冰13')" class="bg-pos-ice border border-gray-400 p-2 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">去冰13</button>
+                        <div class="col-span-1"></div>
+                        <button onclick="applyIce('常溫')" class="bg-pos-ice border border-gray-400 p-2 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">常溫</button>
+
+                        <button onclick="applyIce('微冰20')" class="bg-pos-ice border border-gray-400 p-2 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">微冰20</button>
+                        <div class="col-span-2"></div>
+                        <button onclick="applyIce('溫')" class="bg-pos-ice border border-gray-400 p-2 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">溫</button>
+                        <button onclick="applyIce('熱')" class="bg-pos-ice border border-gray-400 p-2 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">熱</button>
+                    </div>
+
+                    <div class="border-t border-gray-400 my-1"></div>
+
+                    <!-- Sugar Grid (Bottom Section) -->
+                    <div class="grid grid-cols-5 gap-1 text-xs font-bold">
+                        <div class="col-span-1"></div>
+                        <button onclick="applySugar('正常糖6-5')" class="bg-pos-ice border border-gray-400 p-1.5 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">正常糖6-5</button>
+                        <button onclick="applySugar('少糖5-5')" class="bg-pos-ice border border-gray-400 p-1.5 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">少糖5-5</button>
+                        <button onclick="applySugar('正常糖7-5')" class="bg-pos-ice border border-gray-400 p-1.5 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">正常糖7-5</button>
+                        <button onclick="applySugar('少糖6-5')" class="bg-pos-ice border border-gray-400 p-1.5 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">少糖6-5</button>
+
+                        <button onclick="applySugar('半糖4-5')" class="bg-pos-ice border border-gray-400 p-1.5 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">半糖4-5</button>
+                        <button onclick="applySugar('微糖3-5')" class="bg-pos-ice border border-gray-400 p-1.5 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">微糖3-5</button>
+                        <button onclick="applySugar('二分糖2-5')" class="bg-pos-ice border border-gray-400 p-1.5 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">二分糖2-5</button>
+                        <button onclick="applySugar('半糖5-5')" class="bg-pos-ice border border-gray-400 p-1.5 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">半糖5-5</button>
+                        <button onclick="applySugar('微糖4-5')" class="bg-pos-ice border border-gray-400 p-1.5 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">微糖4-5</button>
+
+                        <button onclick="applySugar('一分糖1-5')" class="bg-pos-ice border border-gray-400 p-1.5 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">一分糖1-5</button>
+                        <button onclick="applySugar('無糖0_0')" class="bg-pos-ice border border-gray-400 p-1.5 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">無糖0_0</button>
+                        <div class="col-span-1"></div>
+                        <button onclick="applySugar('一分糖2-5')" class="bg-pos-ice border border-gray-400 p-1.5 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">一分糖2-5</button>
+                        <button onclick="applySugar('無糖0-0')" class="bg-pos-ice border border-gray-400 p-1.5 text-center hover:bg-amber-100 pos-button-shadow active:bg-amber-300">無糖0-0</button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1: Discussion Pin Detail Modal -->
+    <div id="pin-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-300 animate-in fade-in zoom-in-95 duration-200">
+            <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span id="modal-pin-number" class="bg-red-500 text-white font-extrabold w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
+                    <h3 id="modal-pin-title" class="font-bold text-base">討論焦點建議</h3>
+                </div>
+                <button onclick="closePinModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">現有介面問題點 (Pain Point)</h4>
+                    <p id="modal-pin-problem" class="text-slate-800 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-200"></p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">建議廠商調整方向 (Proposal)</h4>
+                    <p id="modal-pin-solution" class="text-slate-800 text-sm font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-200"></p>
+                </div>
+            </div>
+            <div class="bg-slate-100 px-6 py-3 flex justify-end">
+                <button onclick="closePinModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded text-sm">我知道了</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Vendor Optimization Report Summary -->
+    <div id="summary-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden border border-slate-300">
+            <div class="bg-indigo-900 text-white px-6 py-4 flex items-center justify-between">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-clipboard-list text-indigo-300"></i> 與廠商溝通之 POS 介面重構與優化建議整理
+                </h3>
+                <button onclick="closeSummaryModal()" class="text-indigo-200 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-5 text-slate-700 text-sm">
+                <div class="p-4 bg-amber-50 border-l-4 border-amber-500 rounded-r-lg">
+                    <h4 class="font-bold text-amber-900 mb-1">簡報目的說明</h4>
+                    <p class="text-xs leading-relaxed text-amber-800">本 HTML 原型完整還原現行 POS 之排版結構，並針對第一線店員操作效率與錯誤率提出 5 大核心優化議題，作為與系統開發廠商開會規格討論之依據。</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="border-b pb-3">
+                        <span class="font-bold text-indigo-700">1. 按鈕炸裂問題（主品項與加料獨立化）</span>
+                        <p class="text-xs text-slate-600 mt-1">現有介面將『熟成紅茶(大)』與『熟成紅茶(大)+白玉珍珠』分成兩個實體按鈕，導致菜單按鈕數量翻倍。建議改為點選主品項後彈出加料選單，節省 50% 以上按鈕空間。</p>
+                    </div>
+
+                    <div class="border-b pb-3">
+                        <span class="font-bold text-indigo-700">2. 冰甜度代碼雜亂與視覺優化</span>
+                        <p class="text-xs text-slate-600 mt-1">按鈕標籤帶有『正常冰32』、『微糖3-5』等內部參數代碼，造成新人培訓成本增加。建議將代碼移至後台，前端改為現代化直覺標籤。</p>
+                    </div>
+
+                    <div class="border-b pb-3">
+                        <span class="font-bold text-indigo-700">3. 點單列表結構與細節明細顯示</span>
+                        <p class="text-xs text-slate-600 mt-1">現有表格僅單行顯示品項全名，若加上加料或冰甜度文字過長時會擠壓。建議改為『主品項 + 縮排子明細』結構。</p>
+                    </div>
+
+                    <div class="border-b pb-3">
+                        <span class="font-bold text-indigo-700">4. 常用/高頻功能按鈕尺寸與 Fitts Law 觸控優化</span>
+                        <p class="text-xs text-slate-600 mt-1">『結帳』與『+ / -』數量調整按鈕區域太小，而少用的『未買』、『回單』佔據顯眼位置。建議進行熱點分析並重新調配觸控面積。</p>
+                    </div>
+
+                    <div>
+                        <span class="font-bold text-indigo-700">5. 頂部狀態欄資訊層級分明化</span>
+                        <p class="text-xs text-slate-600 mt-1">標題列硬性寫死公司名稱與繁雜版本號，建議收納至設定選單，釋放螢幕高坪效空間給點餐運作。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-100 px-6 py-3 flex justify-end">
+                <button onclick="closeSummaryModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded text-sm">關閉報告</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Interactive Checkout Simulation Modal -->
+    <div id="checkout-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-300">
+            <div class="bg-pos-red text-white px-5 py-3 flex items-center justify-between">
+                <h3 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-cash-register"></i> 結帳確認 (模擬畫面)</h3>
+                <button onclick="closeCheckoutModal()" class="text-white opacity-80 hover:opacity-100"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-5 space-y-3 text-sm">
+                <div class="flex justify-between items-center text-slate-600 font-medium">
+                    <span>總計杯數：</span>
+                    <span id="modal-total-cups" class="font-bold text-slate-900 text-base">0 杯</span>
+                </div>
+                <div class="flex justify-between items-center text-slate-600 font-medium">
+                    <span>應收總金額：</span>
+                    <span id="modal-total-amount" class="font-extrabold text-red-600 text-2xl">NT$ 0</span>
+                </div>
+                <hr>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">實收金額 (請輸入)</label>
+                    <input type="number" id="cash-received" oninput="calculateChange()" value="100" class="w-full border-2 border-slate-300 rounded px-3 py-2 text-xl font-bold font-mono focus:border-indigo-600 outline-none">
+                </div>
+                <div class="flex justify-between items-center bg-slate-100 p-3 rounded-lg border">
+                    <span class="font-bold text-slate-700">找零金額：</span>
+                    <span id="change-amount" class="font-extrabold text-emerald-600 text-2xl font-mono">NT$ 65</span>
+                </div>
+            </div>
+            <div class="bg-slate-100 px-5 py-3 flex gap-2 justify-end">
+                <button onclick="closeCheckoutModal()" class="px-4 py-2 bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold rounded text-sm">取消</button>
+                <button onclick="confirmCheckout()" class="px-5 py-2 bg-pos-red hover:bg-red-900 text-white font-bold rounded text-sm shadow">確認結帳並列印</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Interactive Topping Selection Modal (分區：單料與雙料) -->
+    <div id="topping-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-300 animate-in fade-in zoom-in-95 duration-150">
+            <div class="bg-pos-header text-white px-5 py-3 flex items-center justify-between">
+                <h3 id="topping-modal-title" class="font-bold text-base flex items-center gap-2">
+                    <i class="fa-solid fa-mug-hot text-amber-300"></i> 請選擇加料選項
+                </h3>
+                <button onclick="closeToppingModal()" class="text-slate-300 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-5 space-y-4 max-h-[75vh] overflow-y-auto" id="topping-modal-content">
+                <!-- Dynamic Content rendered via JS (單料與雙料分區) -->
+            </div>
+            <div class="bg-slate-100 px-5 py-3 flex justify-end">
+                <button onclick="closeToppingModal()" class="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-bold rounded text-sm">取消返回</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA & STATE ---
+        let cart = [
+            { id: 1, name: '熟成紅茶(大)(杯)', qty: 1, price: 35, discount: 0, ice: '', sugar: '' }
+        ];
+        let selectedCartIndex = 0;
+        let currentCategory = '紅茶';
+        let annotationsVisible = false;
+
+        // Categorized Topping Customizers (單料 & 雙料)
+        const singleToppings = [
+            { name: '白玉珍珠', priceDelta: 10 },
+            { name: '水玉晶球', priceDelta: 10 },
+            { name: '春梅凍', priceDelta: 15 },
+            { name: '馬告檸檬凍', priceDelta: 15 }
+        ];
+
+        const doubleToppings = [
+            { name: '雙玉', priceDelta: 25 },
+            { name: '白梅', priceDelta: 25 },
+            { name: '白檸', priceDelta: 25 },
+            { name: '水梅', priceDelta: 30 },
+            { name: '水檸', priceDelta: 30 },
+            { name: '梅檸', priceDelta: 30 }
+        ];
+
+        // Menu Data - Restored Medium Cups and Non-drink items in 5x5 grid layout
+        const menuData = {
+            '紅茶': [
+                // Row 1: Large Cups
+                { name: '熟成紅茶(大)', price: 35 },
+                { name: '麗春紅茶(大)', price: 35 },
+                { name: '胭脂紅茶(大)', price: 45 },
+                { name: '胭脂多多(大)', price: 55 },
+                { name: '金蜜熟成(大)', price: 50 },
+
+                // Row 2: Empty slots
+                { name: '', price: 0 }, { name: '', price: 0 }, { name: '', price: 0 }, { name: '', price: 0 }, { name: '', price: 0 },
+
+                // Row 3: Bags & Standalone Toppings
+                { name: '1元塑膠袋', price: 1, hasToppings: false },
+                { name: '2元塑膠袋', price: 2, hasToppings: false },
+                { name: '5元白玉珍珠', price: 5, hasToppings: false },
+                { name: '10元白玉珍珠', price: 10, hasToppings: false },
+                { name: '', price: 0 },
+
+                // Row 4: Medium Cups
+                { name: '熟成紅茶(中)', price: 30 },
+                { name: '麗春紅茶(中)', price: 30 },
+                { name: '胭脂紅茶(中)', price: 40 },
+                { name: '胭脂多多(中)', price: 50 },
+                { name: '金蜜熟成(中)', price: 45 },
+
+                // Row 5: Empty slots
+                { name: '', price: 0 }, { name: '', price: 0 }, { name: '', price: 0 }, { name: '', price: 0 }, { name: '', price: 0 }
+            ]
+        };
+
+        // Vendor Discussion Annotations Data
+        const pinDetails = {
+            1: {
+                title: "頂部狀態列資訊過載與排版改善",
+                problem: "現行頂部欄位包含了版本號 (V 19.10.210)、開發公司名稱、連線圖示等低頻訊息，佔用高度且視線雜亂。",
+                solution: "建議將系統版本號、連線狀態整合為右上角小圖示，並將店員常用之『單號』與『發票號碼』放大顯示，提升辨識效率。"
+            },
+            2: {
+                title: "點單明細列表資訊層級不清晰",
+                problem: "品項名稱將『(大)』、『(杯)』與客製化冰甜度全都擠在同一行文字中，若字數較多時易遭截斷或不易核對。",
+                solution: "建議採『主商品名稱（大字）+ 下方縮排顯示冰甜度/加料備註（小字/標籤）』，讓出餐核對更加直覺。"
+            },
+            3: {
+                title: "底部功能鍵缺乏觸控熱點規劃 (Fitts Law)",
+                problem: "『結帳』按鈕在右下角相對較小，而『未買』、『回單』、『顧客聯』等低頻功能卻佔據一樣大的視覺空間。",
+                solution: "建議重新劃分權限：高頻使用的『結帳』、『取消』、『數量 +/-』應放大 1.5 到 2 倍；管理員功能（交班、錢櫃）可收納至次級選單。"
+            },
+            4: {
+                title: "點餐品項與加料按鈕炸裂問題",
+                problem: "現行做法將『熟成紅茶(大)』與『熟成紅茶(大)+白玉珍珠』硬拆成兩個按鈕，造成菜單畫面按鈕數量膨脹 2-3 倍，尋找品項極為費時。",
+                solution: "採用『彈窗式加料或兩階點購』模式：點擊『熟成紅茶(大)』後，跳出『+白玉珍珠 (+10)』等加料選項，大量節省菜單格子空間。"
+            },
+            5: {
+                title: "冰塊甜度矩陣帶有複雜代碼",
+                problem: "按鈕標記『正常冰32』、『微糖3-5』、『二分糖2-5』等帶有舊式 POS 內部邏輯編號，新進員工學習曲線高。",
+                solution: "將內部編號（32, 3-5）藏於背景傳輸數據，前端 UI 簡化為乾淨直覺的『正常冰』、『微糖』標籤，並標示熱銷或預設推薦。"
+            }
+        };
+
+        // --- RENDER & POS LOGIC ---
+
+        function renderCart() {
+            const tbody = document.getElementById('cart-tbody');
+            tbody.innerHTML = '';
+
+            let totalCups = 0;
+            let totalAmount = 0;
+
+            cart.forEach((item, index) => {
+                totalCups += item.qty;
+                const itemTotal = item.price * item.qty - item.discount;
+                totalAmount += itemTotal;
+
+                const tr = document.createElement('tr');
+                tr.className = `cursor-pointer font-bold ${index === selectedCartIndex ? 'bg-pos-selected' : 'hover:bg-slate-100'}`;
+                tr.onclick = () => selectCartItem(index);
+
+                // Build spec text
+                let specStr = '';
+                if (item.ice || item.sugar) {
+                    specStr = `<br><span class="text-[10px] text-gray-600 font-normal">└ ${item.ice} ${item.sugar}</span>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="p-1.5 border-r border-gray-300">${index + 1} ${item.name}${specStr}</td>
+                    <td class="p-1.5 text-center border-r border-gray-300 font-mono">${item.qty}</td>
+                    <td class="p-1.5 text-right border-r border-gray-300 font-mono">${itemTotal}</td>
+                    <td class="p-1.5 text-center font-mono">${item.discount || ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Update Summaries
+            document.getElementById('total-cups').innerText = totalCups;
+            document.getElementById('total-amount').innerText = totalAmount;
+            document.getElementById('avg-price').innerText = totalCups > 0 ? Math.round(totalAmount / totalCups) : 0;
+
+            // Active item name display box
+            if (cart.length > 0 && cart[selectedCartIndex]) {
+                const cur = cart[selectedCartIndex];
+                document.getElementById('active-item-text').innerText = `${cur.name} ${cur.ice} ${cur.sugar}`;
+            } else {
+                document.getElementById('active-item-text').innerText = '未選擇任何品項';
+            }
+        }
+
+        function renderProducts(categoryKey) {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+
+            const items = menuData[categoryKey] || menuData['紅茶'];
+
+            items.forEach((item) => {
+                const btn = document.createElement('button');
+                if (!item.name) {
+                    btn.className = 'bg-gray-200 p-2 min-h-[48px] border border-gray-300 cursor-default';
+                    grid.appendChild(btn);
+                    return;
+                }
+
+                btn.className = 'bg-pos-item p-1.5 min-h-[48px] border border-amber-600 pos-button-shadow hover:bg-amber-200 active:bg-amber-400 flex flex-col justify-between text-left leading-tight';
+                
+                // If item explicitly has no toppings (e.g. plastic bags), add straight to cart
+                if (item.hasToppings === false) {
+                    btn.onclick = () => addProductToCart(item.name, item.price);
+                } else {
+                    btn.onclick = () => openToppingModal(item);
+                }
+
+                btn.innerHTML = `
+                    <span class="font-bold text-xs">${item.name}</span>
+                `;
+                grid.appendChild(btn);
+            });
+        }
+
+        function openToppingModal(item) {
+            document.getElementById('topping-modal-title').innerText = `點選加料 - ${item.name}`;
+            const container = document.getElementById('topping-modal-content');
+            container.innerHTML = '';
+
+            // 1. Quick Pure Tea Button (不加料)
+            const pureBtn = document.createElement('button');
+            pureBtn.className = 'w-full bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-800 font-bold p-3 rounded-lg border-2 border-slate-300 flex items-center justify-between text-sm transition shadow-sm';
+            pureBtn.onclick = () => {
+                addProductToCart(item.name, item.price);
+                closeToppingModal();
+            };
+            pureBtn.innerHTML = `
+                <span class="flex items-center gap-2">
+                    <i class="fa-solid fa-ban text-slate-500"></i>
+                    <span>原味不加料 (純茶)</span>
+                </span>
+                <span class="font-mono text-slate-700 bg-white px-2.5 py-1 rounded border font-extrabold text-xs">NT$ ${item.price}</span>
+            `;
+            container.appendChild(pureBtn);
+
+            // Helper function to build category sections
+            const renderCategorySection = (title, iconClass, colorBadgeClass, toppingList) => {
+                const section = document.createElement('div');
+                section.className = 'space-y-2';
+
+                // Section Title Banner
+                section.innerHTML = `
+                    <div class="flex items-center gap-2 pb-1 border-b border-gray-200">
+                        <span class="${colorBadgeClass} text-white px-2.5 py-0.5 rounded text-xs font-bold flex items-center gap-1">
+                            <i class="${iconClass}"></i> ${title}
+                        </span>
+                    </div>
+                `;
+
+                // Section Grid
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-2 sm:grid-cols-4 gap-2';
+
+                toppingList.forEach(top => {
+                    const fullItemName = `${item.name} + ${top.name}`;
+                    const totalPrice = item.price + top.priceDelta;
+
+                    const btn = document.createElement('button');
+                    btn.className = 'bg-pos-item hover:bg-amber-200 active:bg-amber-300 text-slate-900 font-bold p-2.5 rounded-lg border border-amber-600 pos-button-shadow flex flex-col justify-between items-start text-xs transition shadow-sm h-16 active:scale-95';
+                    btn.onclick = () => {
+                        addProductToCart(fullItemName, totalPrice);
+                        closeToppingModal();
+                    };
+
+                    btn.innerHTML = `
+                        <div class="flex items-center gap-1.5 w-full">
+                            <i class="fa-solid fa-circle-dot text-amber-800 text-[10px] shrink-0"></i>
+                            <span class="truncate text-left leading-snug w-full font-extrabold text-slate-800">${top.name}</span>
+                        </div>
+                        <div class="w-full flex justify-end items-center">
+                            <span class="font-mono text-red-800 bg-amber-100/90 px-2 py-0.5 rounded border border-amber-300 font-extrabold text-xs">+${top.priceDelta}元</span>
+                        </div>
+                    `;
+                    grid.appendChild(btn);
+                });
+
+                section.appendChild(grid);
+                return section;
+            };
+
+            // 2. Render 單料 Section
+            container.appendChild(renderCategorySection('單料區', 'fa-solid fa-cube', 'bg-sky-700', singleToppings));
+
+            // 3. Render 雙料 Section
+            container.appendChild(renderCategorySection('雙料 / 組合區', 'fa-solid fa-cubes', 'bg-amber-700', doubleToppings));
+
+            document.getElementById('topping-modal').classList.remove('hidden');
+        }
+
+        function closeToppingModal() {
+            document.getElementById('topping-modal').classList.add('hidden');
+        }
+
+        function switchCategory(cat) {
+            currentCategory = '紅茶';
+            renderProducts('紅茶');
+        }
+
+        function addProductToCart(name, price) {
+            cart.push({
+                id: Date.now(),
+                name: name,
+                qty: 1,
+                price: price,
+                discount: 0,
+                ice: '',
+                sugar: ''
+            });
+            selectedCartIndex = cart.length - 1;
+            renderCart();
+        }
+
+        function selectCartItem(index) {
+            selectedCartIndex = index;
+            renderCart();
+        }
+
+        function applyIce(iceValue) {
+            if (cart.length === 0 || selectedCartIndex < 0) return;
+            cart[selectedCartIndex].ice = iceValue;
+            renderCart();
+        }
+
+        function applySugar(sugarValue) {
+            if (cart.length === 0 || selectedCartIndex < 0) return;
+            cart[selectedCartIndex].sugar = sugarValue;
+            renderCart();
+        }
+
+        function changeQty(delta) {
+            if (cart.length === 0 || selectedCartIndex < 0) return;
+            const item = cart[selectedCartIndex];
+            item.qty += delta;
+            if (item.qty <= 0) {
+                cart.splice(selectedCartIndex, 1);
+                selectedCartIndex = Math.max(0, cart.length - 1);
+            }
+            renderCart();
+        }
+
+        function clearCart() {
+            cart = [];
+            selectedCartIndex = -1;
+            renderCart();
+        }
+
+        function dummyAction(actionName) {
+            showToast(`點擊功能鍵：[${actionName}] (展示原型模擬)`);
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-4 py-2 rounded-full shadow-2xl z-50 border border-slate-700 pointer-events-none animate-bounce';
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        function toggleAnnotations() {
+            annotationsVisible = !annotationsVisible;
+            const pins = document.querySelectorAll('.annotation-pin');
+            const btnText = document.getElementById('annotation-btn-text');
+
+            pins.forEach(pin => {
+                if (annotationsVisible) {
+                    pin.classList.remove('hidden');
+                } else {
+                    pin.classList.add('hidden');
+                }
+            });
+
+            if (annotationsVisible) {
+                btnText.innerText = '關閉優化討論標註';
+                showToast('已開啟優化標註！點擊數字圓鈕可查看對應改善建議');
+            } else {
+                btnText.innerText = '開啟優化討論標註 (5)';
+            }
+        }
+
+        function showPinDetail(pinNumber) {
+            const data = pinDetails[pinNumber];
+            if (!data) return;
+
+            document.getElementById('modal-pin-number').innerText = pinNumber;
+            document.getElementById('modal-pin-title').innerText = data.title;
+            document.getElementById('modal-pin-problem').innerText = data.problem;
+            document.getElementById('modal-pin-solution').innerText = data.solution;
+
+            document.getElementById('pin-modal').classList.remove('hidden');
+        }
+
+        function closePinModal() {
+            document.getElementById('pin-modal').classList.add('hidden');
+        }
+
+        function openSummaryModal() {
+            document.getElementById('summary-modal').classList.remove('hidden');
+        }
+
+        function closeSummaryModal() {
+            document.getElementById('summary-modal').classList.add('hidden');
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                showToast('尚未選擇任何茶飲品項，無法結帳！');
+                return;
+            }
+
+            let totalCups = 0;
+            let totalAmount = 0;
+            cart.forEach(item => {
+                totalCups += item.qty;
+                totalAmount += (item.price * item.qty - item.discount);
+            });
+
+            document.getElementById('modal-total-cups').innerText = `${totalCups} 杯`;
+            document.getElementById('modal-total-amount').innerText = `NT$ ${totalAmount}`;
+            document.getElementById('cash-received').value = Math.ceil(totalAmount / 100) * 100 || totalAmount;
+
+            calculateChange();
+            document.getElementById('checkout-modal').classList.remove('hidden');
+        }
+
+        function calculateChange() {
+            const totalStr = document.getElementById('modal-total-amount').innerText.replace('NT$', '').trim();
+            const total = parseInt(totalStr, 10) || 0;
+            const received = parseInt(document.getElementById('cash-received').value, 10) || 0;
+            const change = received - total;
+
+            const changeEl = document.getElementById('change-amount');
+            if (change >= 0) {
+                changeEl.innerText = `NT$ ${change}`;
+                changeEl.className = 'font-extrabold text-emerald-600 text-2xl font-mono';
+            } else {
+                changeEl.innerText = `金額不足 (缺 ${Math.abs(change)})`;
+                changeEl.className = 'font-extrabold text-red-600 text-xl font-mono';
+            }
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkout-modal').classList.add('hidden');
+        }
+
+        function confirmCheckout() {
+            closeCheckoutModal();
+            showToast('🎉 模擬發票印出成功！交易已完成。');
+            clearCart();
+        }
+
+        function resetSystem() {
+            cart = [
+                { id: 1, name: '熟成紅茶(大)(杯)', qty: 1, price: 35, discount: 0, ice: '', sugar: '' }
+            ];
+            selectedCartIndex = 0;
+            renderCart();
+            switchCategory('紅茶');
+            showToast('POS 模擬狀態已恢復初始樣貌');
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            renderCart();
+            renderProducts('紅茶');
+        };
+    </script>
+</body>
+</html>
