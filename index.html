@@ -3,92 +3,337 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LINE 訊息記錄</title>
+<title>工作訊息中心</title>
 <style>
-  body { font-family: system-ui, "Noto Sans TC", sans-serif; max-width: 720px; margin: 0 auto; padding: 16px; background: #f4f6f8; color: #222; }
-  h1 { font-size: 1.3rem; }
-  .config { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-  .config input { flex: 1; min-width: 200px; padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
-  button { padding: 8px 16px; border: 0; border-radius: 6px; background: #06c755; color: #fff; cursor: pointer; }
-  #status { font-size: .85rem; color: #666; margin-bottom: 8px; }
-  .msg { background: #fff; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
-  .meta { font-size: .75rem; color: #888; margin-bottom: 4px; word-break: break-all; }
-  .tag { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: .72rem; color: #fff; margin-right: 6px; }
-  .tag.user { background: #06c755; }
-  .tag.group { background: #3b82f6; }
-  .tag.room { background: #f59e0b; }
-  .text { white-space: pre-wrap; word-break: break-word; }
+:root{--bg:#eef1f6;--card:#fff;--tx:#17203a;--mu:#6a7388;--bd:#dde2ec;--ac:#2446c9;--l2:#d62839;--l1:#d98200;--l0:#8d96aa}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1420;--card:#171e2e;--tx:#e8ecf5;--mu:#8e98b0;--bd:#283148;--ac:#7b96ff;--l2:#ff6b7a;--l1:#f0a93a;--l0:#6b768e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.6 system-ui,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+.wrap{max-width:820px;margin:0 auto;padding:16px 14px 48px}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+h1{font-size:1.35rem;margin:0;letter-spacing:.02em}
+#status{font-size:.8rem;color:var(--mu)}
+nav{display:inline-flex;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:3px;margin-bottom:14px}
+nav button{background:none;border:0;padding:7px 20px;border-radius:7px;font:inherit;color:var(--mu);cursor:pointer}
+nav button.on{background:var(--ac);color:#fff;font-weight:600}
+button,select,input,textarea{font:inherit;color:var(--tx)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.bar input,.bar select,.f input,.f textarea{padding:8px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--card)}
+.bar input{flex:1;min-width:140px}
+.chip{padding:5px 14px;border:1px solid var(--bd);border-radius:18px;background:var(--card);cursor:pointer;color:var(--mu)}
+.chip.on{background:var(--tx);border-color:var(--tx);color:var(--bg)}
+.btn{padding:8px 16px;border:0;border-radius:8px;background:var(--ac);color:#fff;cursor:pointer}
+.btn.sec{background:var(--card);color:var(--tx);border:1px solid var(--bd)}
+.day{font-size:.8rem;color:var(--mu);font-weight:600;margin:18px 2px 8px}
+.pinhd{display:flex;align-items:center;gap:8px;color:var(--l2);font-weight:700;margin:2px 2px 10px}
+.pinhd small{font-weight:400;color:var(--mu)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(23,32,58,.06)}
+.card.l1{border-color:color-mix(in srgb,var(--l1) 50%,var(--bd))}
+.card.l2{border-color:color-mix(in srgb,var(--l2) 50%,var(--bd))}
+.card.pin{background:color-mix(in srgb,var(--l2) 8%,var(--card));border:2px solid var(--l2);box-shadow:0 6px 18px color-mix(in srgb,var(--l2) 20%,transparent)}
+.top{display:flex;gap:7px;align-items:center;flex-wrap:wrap;font-size:.78rem;color:var(--mu)}
+.top .tm{margin-left:auto}
+.lv{border:0;border-radius:12px;padding:2px 10px;font-size:.74rem;font-weight:600;color:#fff;background:var(--l0);cursor:pointer}
+.lv.l1{background:var(--l1)}.lv.l2{background:var(--l2)}
+.cat{border:1px solid var(--ac);color:var(--ac);border-radius:5px;padding:0 7px;font-size:.74rem}
+.nm{cursor:pointer;text-decoration:underline dotted}
+.ttl{font-size:1.05rem;font-weight:700;margin:8px 0 4px;word-break:break-word}
+.bd{white-space:pre-wrap;word-break:break-word;font-size:.92rem;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.bd.open{display:block}
+.lk{background:none;border:0;color:var(--ac);cursor:pointer;padding:2px 0;font-size:.85rem}
+.ft{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.dt{padding:1px 10px;border-radius:5px;background:color-mix(in srgb,var(--ac) 12%,transparent);color:var(--ac);font-size:.8rem}
+.ft .sp{flex:1}
+.cal-h{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.cal-h b{flex:1;text-align:center;font-size:1.05rem}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.wd{text-align:center;font-size:.75rem;color:var(--mu)}
+.cell{min-height:76px;background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:4px;cursor:pointer;overflow:hidden;font-size:.7rem}
+.cell.out{visibility:hidden;cursor:default}
+.cell.today{border:2px solid var(--ac)}
+.cell.sel{background:color-mix(in srgb,var(--ac) 12%,var(--card))}
+.cell .n{font-size:.8rem;font-weight:600}
+.ev{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:3px solid var(--l0);padding-left:3px;margin-top:2px}
+.ev.l1{border-color:var(--l1)}.ev.l2{border-color:var(--l2)}
+h3{margin:18px 0 8px;font-size:.95rem}
+.item{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--bd);border-left:5px solid var(--l0);border-radius:10px;padding:10px 14px;margin-bottom:8px}
+.item.l1{border-left-color:var(--l1)}.item.l2{border-left-color:var(--l2)}.item.past{opacity:.5}
+.item .when{min-width:86px;font-weight:700;font-size:.85rem}
+.item .b{flex:1;word-break:break-word}
+.x{background:none;border:0;color:var(--mu);cursor:pointer;font-size:1rem}
+.f label{display:block;margin:14px 0 4px;font-weight:600;font-size:.9rem}
+.f input,.f textarea{width:100%}
+.f small,.hint{color:var(--mu)}
+.empty{color:var(--mu);text-align:center;padding:36px 0}
+@media(max-width:560px){.cell{min-height:58px}.ev{font-size:.62rem}.item .when{min-width:70px}}
 </style>
 </head>
 <body>
-<h1>📨 LINE 機器人訊息記錄</h1>
+<div class="wrap">
+<header><h1>工作訊息中心</h1><span id="status"></span></header>
+<nav>
+  <button data-t="msgs" class="on">訊息</button>
+  <button data-t="cal">日程表</button>
+  <button data-t="set">設定</button>
+</nav>
 
-<div class="config">
-  <input id="api" placeholder="Worker 網址,例如 https://linetest.kebuke-it.workers.dev">
-  <input id="key" type="password" placeholder="VIEW_KEY 密碼">
-  <button id="save">儲存並載入</button>
+<div class="bar" id="filters">
+  <button class="chip on" data-f="all">全部</button>
+  <button class="chip" data-f="high">重要</button>
+  <button class="chip" data-f="normal">普通</button>
+  <select id="grp"><option value="all">所有來源</option></select>
+  <input id="q" placeholder="搜尋訊息">
 </div>
-<div id="status"></div>
-<div id="list"></div>
+
+<section id="p-msgs"></section>
+<section id="p-cal" hidden></section>
+
+<section id="p-set" class="f" hidden>
+  <label>Worker 網址</label>
+  <input id="api" placeholder="https://linetest.kebuke-it.workers.dev">
+  <label>VIEW_KEY 密碼</label>
+  <input id="key" type="password">
+  <label>置頂關鍵字 <small>(訊息「開頭」是這些字就會高亮並置頂,逗號分隔)</small></label>
+  <textarea id="k-pin" rows="2"></textarea>
+  <label>緊急關鍵字 <small>(出現在訊息任何位置,標為緊急)</small></label>
+  <textarea id="k-high" rows="2"></textarea>
+  <label>重要關鍵字 <small>(命中加分,達標即為「重要」)</small></label>
+  <textarea id="k-mid" rows="3"></textarea>
+  <label>閒聊關鍵字 <small>(短訊息命中會降為普通)</small></label>
+  <textarea id="k-low" rows="2"></textarea>
+  <p><button class="btn" id="save">儲存並重新載入</button>
+  <button class="btn sec" id="reset">還原預設關鍵字</button></p>
+  <p class="hint"><small>置頂的訊息可按「已讀」收起。訊息上的標籤可點擊切換(普通→重要→緊急)。點擊來源或使用者名稱可改成自訂名稱。所有設定只存在這個瀏覽器。</small></p>
+</section>
+</div>
 
 <script>
-const $ = (id) => document.getElementById(id);
-$("api").value = localStorage.getItem("api") || "";
-$("key").value = localStorage.getItem("key") || "";
+const $=id=>document.getElementById(id);
+const LS=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
+const SV=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const DEF={pin:'重大告知,緊急',high:'緊急,急件,急需,asap,務必,立刻,馬上,今天內,盡快,異常,客訴,故障',
+ mid:'重要,注意,通知,會議,開會,截止,deadline,回覆,確認,請,麻煩,提醒,交期,出貨,報價,簽收,對帳,進度,繳',
+ low:'收到,好的,好,ok,了解,謝謝,感謝,哈哈,辛苦了,讚'};
+let cfg=LS('cfg',{api:'',key:''}),names=LS('names',{}),over=LS('over',{}),hidden=LS('hidden',{}),unpin=LS('unpin',{}),
+ kw=Object.assign({},DEF,LS('kw',{}));
+let msgs=[],tab='msgs',filt='all',grp='all',q='',cur=new Date(),sel=null,open=new Set();
+const LV=['普通','重要','緊急'],WD={一:1,二:2,三:3,四:4,五:5,六:6,日:0,天:0};
 
-const LABEL = { user: "私訊", group: "群組", room: "聊天室" };
+/* ---------- 日期解析 ---------- */
+function extract(text,ref){
+ let t=text;const r=new Date(ref),B=new Date(r.getFullYear(),r.getMonth(),r.getDate());
+ const add=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+ const ds=[];let hh=null,mm=0;
+ const tm=t.match(/(早上|上午|中午|下午|晚上|晚間|凌晨)?\s*(\d{1,2})\s*(?:點|時|:|：)\s*(\d{2}|半)?/);
+ if(tm){let h=+tm[2];const p=tm[1]||'';if(/下午|晚/.test(p)&&h<12)h+=12;if(p==='中午'&&h<11)h+=12;
+  const mi=tm[3]==='半'?30:+(tm[3]||0);if(h<24&&mi<60){hh=h;mm=mi;t=t.replace(tm[0],' ')}}
+ const md=(y,m,d)=>{if(m<1||m>12||d<1||d>31)return;let x=new Date(y==null?B.getFullYear():y,m-1,d);
+  if(y==null&&x<add(B,-60))x=new Date(x.getFullYear()+1,m-1,d);ds.push(x)};
+ t=t.replace(/(\d{4})[\/\-.年](\d{1,2})[\/\-.月](\d{1,2})[日號]?/g,(_,y,m,d)=>{md(+y,+m,+d);return' '});
+ t=t.replace(/(\d{1,2})月\s*(\d{1,2})[日號]?/g,(_,m,d)=>{md(null,+m,+d);return' '});
+ t=t.replace(/(?<![\d.:])(\d{1,2})\/(\d{1,2})(?![\d\/])/g,(_,m,d)=>{md(null,+m,+d);return' '});
+ t=t.replace(/(\d{1,2})[日號](?![店機台])/g,(_,d)=>{d=+d;if(d<1||d>31)return' ';
+  let x=new Date(B.getFullYear(),B.getMonth(),d);if(x<B)x=new Date(B.getFullYear(),B.getMonth()+1,d);ds.push(x);return' '});
+ const rel={大後天:3,後天:2,明天:1,明日:1,今天:0,今日:0};
+ t=t.replace(/大後天|後天|明天|明日|今天|今日/g,w=>{ds.push(add(B,rel[w]));return' '});
+ t=t.replace(/(下下|下|這|本|上)?\s*(?:週|周|星期|禮拜)([一二三四五六日天])/g,(_,p,w)=>{
+  const ws=add(B,-((B.getDay()+6)%7)),idx=(WD[w]+6)%7;let x;
+  if(p)x=add(ws,idx+({'下下':14,'下':7,'上':-7}[p]||0));else{x=add(ws,idx);if(x<B)x=add(x,7)}
+  ds.push(x);return' '});
+ const seen=new Set();
+ return ds.sort((a,b)=>a-b).filter(d=>!seen.has(+d)&&seen.add(+d))
+  .map(d=>({d:hh==null?d:new Date(d.getFullYear(),d.getMonth(),d.getDate(),hh,mm),t:hh!=null}));
+}
+const pad=n=>String(n).padStart(2,'0');
+const fmtD=d=>`${d.getMonth()+1}/${d.getDate()}(${'日一二三四五六'[d.getDay()]})`;
+const fmtE=e=>fmtD(e.d)+(e.t?` ${pad(e.d.getHours())}:${pad(e.d.getMinutes())}`:'');
+const fmtT=ts=>{const d=new Date(ts);return pad(d.getHours())+':'+pad(d.getMinutes())};
+const dk=d=>`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+function dayLabel(ts){const d=new Date(ts),t=new Date();t.setHours(0,0,0,0);
+ const n=Math.round((t-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);
+ return n===0?'今天':n===1?'昨天':`${d.getFullYear()}/${fmtD(d)}`}
 
-async function load() {
-  const api = $("api").value.trim().replace(/\/$/, "");
-  const key = $("key").value.trim();
-  if (!api || !key) { $("status").textContent = "請先填入網址與密碼"; return; }
-  try {
-    const res = await fetch(`${api}/messages?key=${encodeURIComponent(key)}`);
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const items = await res.json();
-    const list = $("list");
-    list.innerHTML = "";
-
-    for (const m of items) {
-      const st = m.sourceType || "user";   // 舊資料沒有 sourceType,當成私訊
-
-      const div = document.createElement("div");
-      div.className = "msg";
-
-      const meta = document.createElement("div");
-      meta.className = "meta";
-
-      const tag = document.createElement("span");
-      tag.className = "tag " + st;
-      tag.textContent = LABEL[st] || st;
-
-      let info = new Date(m.time).toLocaleString("zh-TW");
-      if (m.groupId) info += " ・ " + m.groupId;
-      info += " ・ " + (m.userId || "(未知使用者)");
-
-      meta.append(tag, document.createTextNode(info));
-
-      const text = document.createElement("div");
-      text.className = "text";
-      text.textContent = m.text;   // 用 textContent 避免 XSS
-
-      div.append(meta, text);
-      list.append(div);
-    }
-    $("status").textContent = `共 ${items.length} 則,更新於 ${new Date().toLocaleTimeString("zh-TW")}`;
-  } catch (e) {
-    $("status").textContent = "載入失敗:" + e.message;
-  }
+/* ---------- 置頂與重要性 ---------- */
+const words=s=>(kw[s]||'').split(/[,,\n]/).map(x=>x.trim().toLowerCase()).filter(Boolean);
+const mkey=m=>m.time+'_'+(m.userId||'').slice(-6);
+function pinHit(m){
+ const t=(m.text||'').replace(/^[\s【\[(（「『#*!！\u203C\uFE0F\u2757\u26A0\u{1F6A8}\u{1F534}]+/u,'').toLowerCase();
+ return words('pin').some(w=>t.startsWith(w));
+}
+const isPin=m=>m._pin&&!unpin[mkey(m)];
+function lvl(m){
+ const o=over[mkey(m)];if(o!==undefined)return o;
+ if(m._pin)return 2;
+ const t=(m.text||'').toLowerCase(),hit=s=>words(s).some(w=>t.includes(w));
+ if(hit('high'))return 2;
+ let s=0;if(hit('mid'))s+=2;if(m._ev.length)s+=1;if(/[!!]/.test(t))s+=1;if(t.length>80)s+=1;
+ if(hit('low')&&t.length<=10)s-=2;if(m.type!=='text')s-=1;
+ return s>=2?1:0;
 }
 
-$("save").onclick = () => {
-  localStorage.setItem("api", $("api").value.trim());
-  localStorage.setItem("key", $("key").value.trim());
-  load();
-};
+/* ---------- 卡片內容拆解:類別 / 標題 / 內文 ---------- */
+function parseMsg(t){
+ const lines=(t||'').trim().split('\n'),first=lines[0].trim();
+ let cat='',title=first,rest=lines.slice(1).join('\n').trim();
+ const i=first.search(/[｜|]/);
+ if(i>0){cat=first.slice(0,i).trim();title=first.slice(i+1).trim()}
+ else if(first.length<=10&&/^[^\s。,,!!?]+$/.test(first)&&rest){
+  cat=first;const ls=rest.split('\n');title=ls[0].trim();rest=ls.slice(1).join('\n').trim()}
+ return{cat,title,rest};
+}
 
-load();
-setInterval(load, 5000);   // 每 5 秒自動更新
+/* ---------- 名稱 ---------- */
+const gkey=m=>m.groupId||'private';
+const gname=m=>m.groupId?(names[m.groupId]||'群組 '+m.groupId.slice(-4)):'私訊';
+const uname=id=>names[id]||(id?'用戶 '+id.slice(-4):'未知');
+function rename(id){const v=prompt('輸入顯示名稱(留空恢復預設)',names[id]||'');if(v===null)return;
+ if(v.trim())names[id]=v.trim();else delete names[id];SV('names',names);render()}
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+function nameSpan(label,id){const s=el('span','nm',label);if(id)s.onclick=()=>rename(id);return s}
+
+/* ---------- 訊息卡片 ---------- */
+function card(m,pinned){
+ const L=lvl(m),k=mkey(m),p=parseMsg(m.text);
+ const c=el('article','card l'+L+(pinned?' pin':''));
+ const top=el('div','top');
+ const b=el('button','lv l'+L,(pinned?'📌 ':'')+LV[L]);b.title='點擊切換重要性';
+ b.onclick=()=>{over[k]=(L+1)%3;SV('over',over);render()};
+ top.append(b);
+ if(p.cat)top.append(el('span','cat',p.cat));
+ top.append(nameSpan(gname(m),m.groupId),nameSpan(uname(m.userId),m.userId),el('span','tm',fmtT(m.time)));
+ c.append(top);
+ if(p.title)c.append(el('div','ttl',p.title));
+ if(p.rest){
+  const bd=el('div','bd'+(open.has(k)?' open':''),p.rest);c.append(bd);
+  if(p.rest.length>140||p.rest.split('\n').length>6){
+   const lk=el('button','lk',open.has(k)?'收合 ▲':'展開全文 ▼');
+   lk.onclick=()=>{open.has(k)?open.delete(k):open.add(k);render()};c.append(lk)}
+ }
+ const ft=el('div','ft');m._ev.forEach(e=>ft.append(el('span','dt','📅 '+fmtE(e))));
+ if(pinned){ft.append(el('span','sp'));const rd=el('button','btn sec','已讀');
+  rd.onclick=()=>{unpin[k]=1;SV('unpin',unpin);render()};ft.append(rd)}
+ if(ft.children.length)c.append(ft);
+ return c;
+}
+function renderMsgs(){
+ const box=$('p-msgs');box.innerHTML='';
+ const base=msgs.filter(m=>(grp==='all'||gkey(m)===grp)&&(!q||(m.text||'').toLowerCase().includes(q)));
+ const pins=base.filter(isPin);
+ if(pins.length){
+  const h=el('div','pinhd','📌 置頂公告');h.append(el('small','',`${pins.length} 則未讀`));box.append(h);
+  pins.forEach(m=>box.append(card(m,true)));
+ }
+ const list=base.filter(m=>{if(isPin(m))return false;const L=lvl(m);
+  return !(filt==='high'&&L===0)&&!(filt==='normal'&&L>0)}).slice(0,300);
+ if(!list.length&&!pins.length){box.append(el('div','empty','沒有符合的訊息'));return}
+ let last='';
+ for(const m of list){
+  const d=dayLabel(m.time);if(d!==last){box.append(el('div','day',d));last=d}
+  box.append(card(m,false));
+ }
+}
+
+/* ---------- 日程頁 ---------- */
+function events(){
+ const out=[];
+ for(const m of msgs)for(const e of m._ev){
+  const k=mkey(m)+'|'+e.d.getTime();if(hidden[k])continue;
+  if(grp!=='all'&&gkey(m)!==grp)continue;
+  out.push({k,d:e.d,t:e.t,m,L:lvl(m)});
+ }
+ return out.sort((a,b)=>a.d-b.d);
+}
+function itemEl(e,showDate){
+ const today=new Date();today.setHours(0,0,0,0);
+ const it=el('div','item l'+e.L+(e.d<today?' past':''));
+ it.append(el('div','when',showDate?fmtE(e):(e.t?fmtT(e.d):'全天')));
+ const p=parseMsg(e.m.text),body=el('div','b');
+ body.append(el('div','',p.title||e.m.text));
+ const meta=el('div','top');if(p.cat)meta.append(el('span','cat',p.cat));
+ meta.append(el('span','',gname(e.m)+' / '+uname(e.m.userId)));body.append(meta);
+ const x=el('button','x','✕');x.title='從日程移除';
+ x.onclick=()=>{hidden[e.k]=1;SV('hidden',hidden);render()};
+ it.append(body,x);return it;
+}
+function renderCal(){
+ const box=$('p-cal');box.innerHTML='';
+ const evs=events(),by={};evs.forEach(e=>(by[dk(e.d)]=by[dk(e.d)]||[]).push(e));
+ const y=cur.getFullYear(),mo=cur.getMonth();
+ const h=el('div','cal-h'),prev=el('button','btn sec','◀'),next=el('button','btn sec','▶'),tdy=el('button','btn sec','今天');
+ prev.onclick=()=>{cur=new Date(y,mo-1,1);render()};next.onclick=()=>{cur=new Date(y,mo+1,1);render()};
+ tdy.onclick=()=>{cur=new Date();sel=dk(new Date());render()};
+ h.append(prev,el('b','',`${y} 年 ${mo+1} 月`),next,tdy);box.append(h);
+ const g=el('div','grid');'日一二三四五六'.split('').forEach(w=>g.append(el('div','wd',w)));
+ const first=new Date(y,mo,1).getDay(),days=new Date(y,mo+1,0).getDate(),todayK=dk(new Date());
+ for(let i=0;i<first;i++)g.append(el('div','cell out'));
+ for(let d=1;d<=days;d++){
+  const k=`${y}-${mo+1}-${d}`,c=el('div','cell'+(k===todayK?' today':'')+(k===sel?' sel':''));
+  c.append(el('div','n',d));
+  const list=by[k]||[];
+  list.slice(0,2).forEach(e=>c.append(el('span','ev l'+e.L,parseMsg(e.m.text).title||e.m.text)));
+  if(list.length>2)c.append(el('span','',`+${list.length-2} 則`));
+  c.onclick=()=>{sel=sel===k?null:k;render()};
+  g.append(c);
+ }
+ box.append(g);
+ if(sel){
+  const list=by[sel]||[],[,sm,sd]=sel.split('-');
+  box.append(el('h3','',`${sm}/${sd} 的行程`));
+  if(!list.length)box.append(el('div','empty','這天沒有行程'));
+  list.forEach(e=>box.append(itemEl(e,false)));
+ }else{
+  const t0=new Date();t0.setHours(0,0,0,0);
+  const up=evs.filter(e=>e.d>=t0).slice(0,40);
+  box.append(el('h3','','接下來的行程'));
+  if(!up.length)box.append(el('div','empty','目前沒有偵測到未來的日期'));
+  up.forEach(e=>box.append(itemEl(e,true)));
+ }
+}
+
+/* ---------- 控制 ---------- */
+function refreshGroups(){
+ const s=$('grp'),keep=grp,seen={};
+ msgs.forEach(m=>seen[gkey(m)]=gname(m));
+ s.innerHTML='';s.append(new Option('所有來源','all'));
+ Object.keys(seen).forEach(k=>s.append(new Option(seen[k],k)));
+ s.value=(seen[keep]||keep==='all')?keep:'all';grp=s.value;
+}
+function render(){
+ refreshGroups();
+ $('filters').hidden=tab==='set';
+ $('p-msgs').hidden=tab!=='msgs';$('p-cal').hidden=tab!=='cal';$('p-set').hidden=tab!=='set';
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
+ if(tab==='msgs')renderMsgs();if(tab==='cal')renderCal();
+}
+function fillSettings(){
+ $('api').value=cfg.api;$('key').value=cfg.key;
+ ['pin','high','mid','low'].forEach(k=>$('k-'+k).value=kw[k]||'');
+}
+async function load(){
+ if(!cfg.api||!cfg.key){tab='set';render();$('status').textContent='請先填入 Worker 網址與密碼';return}
+ try{
+  const r=await fetch(cfg.api.replace(/\/$/,'')+'/messages?key='+encodeURIComponent(cfg.key));
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  msgs=(await r.json()).sort((a,b)=>b.time-a.time);
+  msgs.forEach(m=>{m._ev=m.type==='text'?extract(m.text||'',m.time):[];m._pin=m.type==='text'&&pinHit(m)});
+  render();
+  const pins=msgs.filter(isPin).length;
+  $('status').textContent=`${msgs.length} 則・置頂 ${pins} 則・行程 ${events().length} 筆・${new Date().toLocaleTimeString('zh-TW',{hour12:false})} 更新`;
+ }catch(e){$('status').textContent='載入失敗:'+e.message}
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
+ filt=c.dataset.f;document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===c));render()});
+$('grp').onchange=e=>{grp=e.target.value;render()};
+$('q').oninput=e=>{q=e.target.value.trim().toLowerCase();render()};
+$('save').onclick=()=>{
+ cfg={api:$('api').value.trim(),key:$('key').value.trim()};SV('cfg',cfg);
+ kw={pin:$('k-pin').value,high:$('k-high').value,mid:$('k-mid').value,low:$('k-low').value};SV('kw',kw);
+ tab='msgs';load();
+};
+$('reset').onclick=()=>{kw=Object.assign({},DEF);SV('kw',kw);fillSettings()};
+fillSettings();load();setInterval(load,30000);
 </script>
 </body>
 </html>
