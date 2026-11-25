@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LINE 訊息記錄</title>
+<style>
+  body { font-family: system-ui, "Noto Sans TC", sans-serif; max-width: 720px; margin: 0 auto; padding: 16px; background: #f4f6f8; color: #222; }
+  h1 { font-size: 1.3rem; }
+  .config { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .config input { flex: 1; min-width: 200px; padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
+  button { padding: 8px 16px; border: 0; border-radius: 6px; background: #06c755; color: #fff; cursor: pointer; }
+  #status { font-size: .85rem; color: #666; margin-bottom: 8px; }
+  .msg { background: #fff; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .meta { font-size: .75rem; color: #888; margin-bottom: 4px; word-break: break-all; }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: .72rem; color: #fff; margin-right: 6px; }
+  .tag.user { background: #06c755; }
+  .tag.group { background: #3b82f6; }
+  .tag.room { background: #f59e0b; }
+  .text { white-space: pre-wrap; word-break: break-word; }
+</style>
+</head>
+<body>
+<h1>📨 LINE 機器人訊息記錄</h1>
+
+<div class="config">
+  <input id="api" placeholder="Worker 網址,例如 https://linetest.kebuke-it.workers.dev">
+  <input id="key" type="password" placeholder="VIEW_KEY 密碼">
+  <button id="save">儲存並載入</button>
+</div>
+<div id="status"></div>
+<div id="list"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+$("api").value = localStorage.getItem("api") || "";
+$("key").value = localStorage.getItem("key") || "";
+
+const LABEL = { user: "私訊", group: "群組", room: "聊天室" };
+
+async function load() {
+  const api = $("api").value.trim().replace(/\/$/, "");
+  const key = $("key").value.trim();
+  if (!api || !key) { $("status").textContent = "請先填入網址與密碼"; return; }
+  try {
+    const res = await fetch(`${api}/messages?key=${encodeURIComponent(key)}`);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const items = await res.json();
+    const list = $("list");
+    list.innerHTML = "";
+
+    for (const m of items) {
+      const st = m.sourceType || "user";   // 舊資料沒有 sourceType,當成私訊
+
+      const div = document.createElement("div");
+      div.className = "msg";
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+
+      const tag = document.createElement("span");
+      tag.className = "tag " + st;
+      tag.textContent = LABEL[st] || st;
+
+      let info = new Date(m.time).toLocaleString("zh-TW");
+      if (m.groupId) info += " ・ " + m.groupId;
+      info += " ・ " + (m.userId || "(未知使用者)");
+
+      meta.append(tag, document.createTextNode(info));
+
+      const text = document.createElement("div");
+      text.className = "text";
+      text.textContent = m.text;   // 用 textContent 避免 XSS
+
+      div.append(meta, text);
+      list.append(div);
+    }
+    $("status").textContent = `共 ${items.length} 則,更新於 ${new Date().toLocaleTimeString("zh-TW")}`;
+  } catch (e) {
+    $("status").textContent = "載入失敗:" + e.message;
+  }
+}
+
+$("save").onclick = () => {
+  localStorage.setItem("api", $("api").value.trim());
+  localStorage.setItem("key", $("key").value.trim());
+  load();
+};
+
+load();
+setInterval(load, 5000);   // 每 5 秒自動更新
+</script>
+</body>
+</html>
